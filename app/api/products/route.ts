@@ -38,16 +38,17 @@ export async function GET(request: NextRequest) {
         category: true,
         images: {
           orderBy: { order: 'asc' },
-          take: 1,
         },
       },
       orderBy: { createdAt: 'desc' },
     })
 
-    // Parse specifications de String para JSON
+    // Parse specifications, technicalSpecs e documentation de String para JSON
     const productsWithParsedSpecs = products.map(product => ({
       ...product,
       specifications: product.specifications ? JSON.parse(product.specifications) : null,
+      technicalSpecs: product.technicalSpecs ? JSON.parse(product.technicalSpecs) : null,
+      documentation: product.documentation ? JSON.parse(product.documentation) : null,
     }))
 
     return NextResponse.json({ products: productsWithParsedSpecs })
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json()
-    const { name, description, shortDescription, categoryId, featured, specifications } = data
+    const { name, description, shortDescription, categoryId, featured, specifications, technicalSpecs, documentation, price, images } = data
 
     const slug = slugify(name)
 
@@ -82,9 +83,19 @@ export async function POST(request: NextRequest) {
         slug,
         description,
         shortDescription,
+        price: price || null,
         categoryId: categoryId || null,
         featured: featured || false,
         specifications: specifications ? JSON.stringify(specifications) : null,
+        technicalSpecs: technicalSpecs ? JSON.stringify(technicalSpecs) : null,
+        documentation: documentation ? JSON.stringify(documentation) : null,
+        images: images && images.length > 0 ? {
+          create: images.map((img: any, index: number) => ({
+            url: img.url,
+            alt: img.alt || name,
+            order: img.order !== undefined ? img.order : index,
+          })),
+        } : undefined,
       },
       include: {
         category: true,

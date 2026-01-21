@@ -70,21 +70,36 @@ export function StatsCounter() {
   }
 
   return (
-    <section ref={sectionRef} className="py-16 md:py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section ref={sectionRef} className="py-20 md:py-24 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
+      {/* Elementos decorativos tecnológicos */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[#67CBDD] rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-2">
+            Números que Comprovam
+          </h2>
+          <div className="w-24 h-1 bg-[#67CBDD] mx-auto rounded-full"></div>
+        </div>
+        
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="text-center"
+              className="text-center group"
             >
-              <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#67CBDD] mb-2">
-                {stat.prefix}
-                {counters[index].toLocaleString('pt-BR')}
-                {stat.suffix}
-              </div>
-              <div className="text-sm md:text-base text-gray-600 font-medium">
-                {stat.label}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-2 border-transparent hover:border-[#67CBDD] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#67CBDD] mb-3 group-hover:scale-110 transition-transform">
+                  {stat.prefix}
+                  {counters[index].toLocaleString('pt-BR')}
+                  {stat.suffix}
+                </div>
+                <div className="text-sm md:text-base text-gray-700 font-semibold">
+                  {stat.label}
+                </div>
               </div>
             </div>
           ))}

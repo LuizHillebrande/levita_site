@@ -39,15 +39,22 @@ export function QuemSomosSection() {
   }, [])
 
   return (
-    <section ref={sectionRef} className="py-16 md:py-20 bg-gray-50">
-      <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+    <section ref={sectionRef} className="py-20 md:py-24 bg-gradient-to-br from-white via-gray-50 to-[#67CBDD]/5 relative overflow-hidden">
+      {/* Elementos decorativos */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#67CBDD]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Texto */}
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-6">
-              Quem Somos
-            </h2>
-            <div className="space-y-4 text-gray-700 text-base md:text-lg leading-relaxed">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
+                Quem Somos
+              </h2>
+              <div className="w-24 h-1 bg-[#67CBDD] rounded-full mb-6"></div>
+            </div>
+            
+            <div className="space-y-6 text-gray-700 text-base md:text-lg leading-relaxed">
               <div
                 className={`transition-all duration-1000 ${
                   isVisible
@@ -55,11 +62,13 @@ export function QuemSomosSection() {
                     : 'opacity-0 translate-y-4'
                 }`}
               >
-                <p className="font-bold text-[#67CBDD] text-xl md:text-2xl mb-2 relative pl-4 border-l-4 border-[#67CBDD] bg-[#67CBDD]/5 py-3 rounded-r-lg">
-                  Há mais de 40 anos fazendo história.
-                </p>
+                <div className="bg-gradient-to-r from-[#67CBDD]/10 to-transparent border-l-4 border-[#67CBDD] p-6 rounded-r-xl shadow-lg">
+                  <p className="font-bold text-[#67CBDD] text-2xl md:text-3xl leading-tight">
+                    Há mais de 40 anos fazendo história.
+                  </p>
+                </div>
               </div>
-              <p>
+              <p className="text-lg">
                 Através da qualidade e por meio de um sistema de distribuição eficaz, 
                 nos consolidamos como a marca mais lembrada pelo paranaense na categoria 
                 móveis hospitalares. Pioneiros na região de Londrina neste ramo, somos 
@@ -70,9 +79,12 @@ export function QuemSomosSection() {
             </div>
           </div>
 
-          {/* Carrossel de Imagens */}
-          <div>
-            <ImageCarousel images={images} />
+          {/* Carrossel de Imagens - Estilo Tecnológico */}
+          <div className="relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-[#67CBDD] to-secondary rounded-xl blur opacity-20"></div>
+            <div className="relative bg-white rounded-xl p-2 shadow-2xl">
+              <ImageCarousel images={images} />
+            </div>
           </div>
         </div>
       </div>

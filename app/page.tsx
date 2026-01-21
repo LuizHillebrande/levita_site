@@ -6,15 +6,16 @@ import { RotatingText } from '@/components/rotating-text'
 import { HeroCarousel } from '@/components/hero-carousel'
 import { StatsCounter } from '@/components/stats-counter'
 import { QuemSomosSection } from '@/components/quem-somos-section'
+import { FeaturedProducts } from '@/components/featured-products'
 
 export default function Home() {
   return (
     <div className="flex flex-col">
-      {/* Rotating Text */}
-      <RotatingText />
-      
       {/* Hero Carousel */}
       <HeroCarousel />
+
+      {/* Rotating Text */}
+      <RotatingText />
 
       {/* Stats Counter */}
       <StatsCounter />
@@ -22,17 +23,28 @@ export default function Home() {
       {/* Quem Somos */}
       <QuemSomosSection />
 
-      {/* Categorias */}
-      <section className="py-16 bg-gray-50">
+      {/* Categorias - Estilo Tecnológico */}
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12 text-secondary">
-            Nossas Categorias
-          </h2>
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
+              Nossas Categorias
+            </h2>
+            <div className="w-24 h-1 bg-[#67CBDD] mx-auto rounded-full"></div>
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['Camas', 'Armários', 'Berços', 'Carros', 'Mesas', 'Suportes', 'Diversos'].map((category) => (
-              <Card key={category} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="text-center text-lg">{category}</CardTitle>
+            {['Camas', 'Armários', 'Berços', 'Carros', 'Mesas', 'Suportes', 'Diversos'].map((category, index) => (
+              <Card 
+                key={category} 
+                className="group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-[#67CBDD] hover:-translate-y-2 bg-white"
+              >
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-[#67CBDD]/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#67CBDD] transition-colors">
+                    <span className="text-2xl group-hover:scale-110 transition-transform">🏥</span>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-secondary group-hover:text-[#67CBDD] transition-colors">
+                    {category}
+                  </CardTitle>
                 </CardHeader>
               </Card>
             ))}
@@ -40,61 +52,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Produtos em Destaque */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-secondary">Produtos em Destaque</h2>
-            <Button asChild variant="ghost">
-              <Link href="/produtos">
-                Ver Todos <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-video bg-gray-200 flex items-center justify-center">
-                  <span className="text-4xl">🛏️</span>
-                </div>
-                <CardHeader>
-                  <CardTitle>Produto {i}</CardTitle>
-                  <CardDescription>
-                    Descrição breve do produto hospitalar de alta qualidade.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button asChild className="w-full">
-                    <Link href={`/produtos/produto-${i}`}>Ver Detalhes</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Produtos em Destaque - Estilo Tecnológico */}
+      <FeaturedProducts />
 
-      {/* Sobre a Empresa */}
-      <section className="py-16 bg-[#67CBDD]/30">
+      {/* Sobre a Empresa - Estilo Tecnológico */}
+      <section className="py-20 bg-gradient-to-br from-[#67CBDD]/10 via-white to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-6 text-secondary">Quem Somos</h2>
-              <p className="text-gray-700 mb-4">
-                Fabricantes de móveis hospitalares, nos consolidamos como a marca mais lembrada 
-                pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.
-              </p>
-              <p className="text-gray-700 mb-4">
-                Pioneiros na região de Londrina neste ramo, somos conhecidos por manter um padrão 
-                técnico na confecção de nossos produtos, que resulta em móveis de alta durabilidade 
-                e atende minuciosamente as exigências do mercado.
-              </p>
-              <Button asChild>
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-secondary">
+                  Quem Somos
+                </h2>
+                <div className="w-24 h-1 bg-[#67CBDD] rounded-full mb-6"></div>
+              </div>
+              <div className="space-y-4 text-gray-700 text-lg leading-relaxed">
+                <p>
+                  Fabricantes de móveis hospitalares, nos consolidamos como a marca mais lembrada 
+                  pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.
+                </p>
+                <p>
+                  Pioneiros na região de Londrina neste ramo, somos conhecidos por manter um padrão 
+                  técnico na confecção de nossos produtos, que resulta em móveis de alta durabilidade 
+                  e atende minuciosamente as exigências do mercado.
+                </p>
+              </div>
+              <Button asChild size="lg" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
                 <Link href="/sobre">Saiba Mais</Link>
               </Button>
             </div>
-            <div className="bg-white rounded-lg p-8 shadow-lg">
-              <h3 className="text-2xl font-bold mb-6 text-secondary">Nossos Valores</h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-2xl border-2 border-[#67CBDD]/20">
+              <h3 className="text-2xl font-bold mb-6 text-secondary flex items-center">
+                <span className="w-1 h-8 bg-[#67CBDD] rounded-full mr-3"></span>
+                Nossos Valores
+              </h3>
               <ul className="space-y-4">
                 {[
                   'Qualidade e durabilidade',
@@ -102,13 +93,41 @@ export default function Home() {
                   'Inovação contínua',
                   'Padrão técnico elevado'
                 ].map((value) => (
-                  <li key={value} className="flex items-center space-x-3">
-                    <CheckCircle className="h-5 w-5 text-primary" />
-                    <span className="text-gray-700">{value}</span>
+                  <li key={value} className="flex items-center space-x-3 group">
+                    <div className="w-8 h-8 bg-[#67CBDD]/10 rounded-full flex items-center justify-center group-hover:bg-[#67CBDD] transition-colors">
+                      <CheckCircle className="h-5 w-5 text-[#67CBDD] group-hover:text-white transition-colors" />
+                    </div>
+                    <span className="text-gray-700 font-medium">{value}</span>
                   </li>
                 ))}
               </ul>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action - Estilo Tecnológico */}
+      <section className="py-20 md:py-24 bg-gradient-to-r from-secondary via-secondary/95 to-secondary relative overflow-hidden">
+        {/* Elementos decorativos */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-[#67CBDD] rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#67CBDD] rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
+            Precisa de um Orçamento?
+          </h2>
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Entre em contato conosco e solicite um orçamento personalizado para suas necessidades hospitalares.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white border-2 border-white/30 shadow-xl text-lg px-8 py-6">
+              <Link href="/contato">Fale Conosco</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-2 border-white/50 backdrop-blur-sm text-lg px-8 py-6">
+              <Link href="/produtos">Ver Produtos</Link>
+            </Button>
           </div>
         </div>
       </section>

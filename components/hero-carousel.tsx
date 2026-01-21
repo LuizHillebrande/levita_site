@@ -25,7 +25,7 @@ export function HeroCarousel() {
       description: 'Pioneiros na região de Londrina, oferecemos móveis hospitalares de alta durabilidade que atendem minuciosamente as exigências do mercado.',
       buttonText: 'Solicitar Orçamento',
       buttonLink: '/contato',
-      text: 'Referência no mercado em que atuamos por todo território nacional, por manter um padrão técnico na confecção de nossos produtos.',
+      text: 'A marca mais lembrada pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.',
     },
     
   ]
@@ -52,7 +52,7 @@ export function HeroCarousel() {
   }
 
   return (
-    <div className="relative w-full h-screen min-h-[500px] max-h-[800px] overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden">
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
@@ -71,24 +71,26 @@ export function HeroCarousel() {
               quality={100}
               sizes="100vw"
             />
-            {/* Overlay sutil para melhor legibilidade do botão */}
-            <div className="absolute inset-0 bg-black/10"></div>
+            {/* Overlay gradiente tecnológico */}
+            <div className="absolute inset-0 bg-gradient-to-r from-secondary/85 via-secondary/70 to-transparent"></div>
+            <div className="absolute inset-0 bg-[#67CBDD]/15"></div>
             
-            {/* Botão no canto superior esquerdo */}
-            <div className="absolute top-6 left-6 z-20">
-              <Button asChild size="lg" className="bg-white/50 backdrop-blur-md text-secondary hover:bg-white/70 border border-white/40">
-                <Link href={slide.buttonLink}>{slide.buttonText}</Link>
-              </Button>
-            </div>
-
-            {/* Texto no meio direito - cada slide tem seu próprio texto */}
-            {slide.text && (
-              <div className="absolute top-1/2 -translate-y-1/2 right-6 md:right-22 lg:right-32 z-20 max-w-lg">
-                <p className="text-white text-lg md:text-xl lg:text-2xl drop-shadow-lg text-justify">
-                  {slide.text}
-                </p>
+            {/* Container de texto no canto inferior direito - menor */}
+            <div className="absolute bottom-24 md:bottom-32 right-4 md:right-8 z-20 max-w-xs md:max-w-md">
+              <div className="bg-white/10 backdrop-blur-md border-l-4 border-[#67CBDD] p-3 md:p-4 rounded-r-xl shadow-2xl">
+                <h2 className="text-sm md:text-base lg:text-lg font-bold text-white mb-2 leading-tight">
+                  Muito mais recursos para as equipes de cuidado e para a segurança do paciente
+                </h2>
+                {slide.text && (
+                  <p className="text-white/95 text-xs md:text-sm leading-relaxed mb-3">
+                    {slide.text}
+                  </p>
+                )}
+                <Button asChild size="sm" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white border-2 border-white/30 shadow-lg font-semibold text-xs md:text-sm">
+                  <Link href={slide.buttonLink}>{slide.buttonText}</Link>
+                </Button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       ))}

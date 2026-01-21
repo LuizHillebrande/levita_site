@@ -25,10 +25,12 @@ export async function GET(
       )
     }
 
-    // Parse specifications de String para JSON
+    // Parse specifications, technicalSpecs e documentation de String para JSON
     const productWithParsedSpecs = {
       ...product,
       specifications: product.specifications ? JSON.parse(product.specifications) : null,
+      technicalSpecs: product.technicalSpecs ? JSON.parse(product.technicalSpecs) : null,
+      documentation: product.documentation ? JSON.parse(product.documentation) : null,
     }
 
     return NextResponse.json({ product: productWithParsedSpecs })
@@ -56,7 +58,7 @@ export async function PUT(
     }
 
     const data = await request.json()
-    const { name, description, shortDescription, categoryId, featured, active, specifications } = data
+    const { name, description, shortDescription, categoryId, featured, active, specifications, technicalSpecs, documentation, price, images } = data
 
     const slug = name ? slugify(name) : undefined
 
@@ -65,11 +67,37 @@ export async function PUT(
     if (name) updateData.slug = slug
     if (description !== undefined) updateData.description = description
     if (shortDescription !== undefined) updateData.shortDescription = shortDescription
+    if (price !== undefined) updateData.price = price || null
     if (categoryId !== undefined) updateData.categoryId = categoryId || null
     if (featured !== undefined) updateData.featured = featured
     if (active !== undefined) updateData.active = active
     if (specifications !== undefined) {
       updateData.specifications = specifications ? JSON.stringify(specifications) : null
+    }
+    if (technicalSpecs !== undefined) {
+      updateData.technicalSpecs = technicalSpecs ? JSON.stringify(technicalSpecs) : null
+    }
+    if (documentation !== undefined) {
+      updateData.documentation = documentation ? JSON.stringify(documentation) : null
+    }
+
+    // Atualizar imagens se fornecidas
+    if (images !== undefined) {
+      // Deletar todas as imagens antigas
+      await prisma.productImage.deleteMany({
+        where: { productId: params.id },
+      })
+
+      // Criar novas imagens se houver
+      if (images && images.length > 0) {
+        updateData.images = {
+          create: images.map((img: any, index: number) => ({
+            url: img.url,
+            alt: img.alt || name,
+            order: img.order !== undefined ? img.order : index,
+          })),
+        }
+      }
     }
 
     const product = await prisma.product.update({
@@ -77,14 +105,18 @@ export async function PUT(
       data: updateData,
       include: {
         category: true,
-        images: true,
+        images: {
+          orderBy: { order: 'asc' },
+        },
       },
     })
 
-    // Parse specifications de String para JSON
+    // Parse specifications, technicalSpecs e documentation de String para JSON
     const productWithParsedSpecs = {
       ...product,
       specifications: product.specifications ? JSON.parse(product.specifications) : null,
+      technicalSpecs: product.technicalSpecs ? JSON.parse(product.technicalSpecs) : null,
+      documentation: product.documentation ? JSON.parse(product.documentation) : null,
     }
 
     return NextResponse.json({ product: productWithParsedSpecs })

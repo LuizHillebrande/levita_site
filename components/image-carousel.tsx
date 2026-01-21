@@ -64,33 +64,33 @@ export function ImageCarousel({ images, autoPlay = true, interval = 4000 }: Imag
         </div>
       ))}
 
-      {/* Botões de navegação */}
+      {/* Botões de navegação - Estilo Tecnológico */}
       {images.length > 1 && (
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-secondary p-2 rounded-full transition-all shadow-md"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-[#67CBDD] hover:bg-[#4FA8B8] text-white p-3 rounded-full transition-all shadow-lg backdrop-blur-sm border-2 border-white/30"
             aria-label="Slide anterior"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-secondary p-2 rounded-full transition-all shadow-md"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-[#67CBDD] hover:bg-[#4FA8B8] text-white p-3 rounded-full transition-all shadow-lg backdrop-blur-sm border-2 border-white/30"
             aria-label="Próximo slide"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          {/* Indicadores */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
+          {/* Indicadores - Estilo Tecnológico */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex space-x-2 bg-black/30 backdrop-blur-sm px-4 py-2 rounded-full">
             {images.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
                 className={`h-2 rounded-full transition-all ${
                   index === currentIndex
-                    ? 'w-8 bg-white'
+                    ? 'w-8 bg-[#67CBDD]'
                     : 'w-2 bg-white/50 hover:bg-white/75'
                 }`}
                 aria-label={`Ir para slide ${index + 1}`}

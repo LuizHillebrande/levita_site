@@ -48,6 +48,8 @@ model Product {
   category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images      ProductImage[]
   specifications String?     // Para armazenar ficha técnica como JSON (String no SQLite)
+  documentation String?      // URLs de PDFs/manuais/documentação (JSON array)
+  technicalSpecs String?     // Especificações técnicas detalhadas (JSON)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 }
