@@ -70,15 +70,16 @@ export function HeroCarousel() {
               priority={index === 0}
               quality={100}
               sizes="100vw"
-              style={{ boxShadow: 'none' }}
+              unoptimized
+              style={{ boxShadow: 'none', imageRendering: 'auto' }}
             />
             {/* Overlay gradiente tecnológico */}
-            <div className="absolute inset-0 bg-gradient-to-r from-secondary/85 via-secondary/70 to-transparent"></div>
-            <div className="absolute inset-0 bg-[#67CBDD]/15"></div>
+          {/* <div className="absolute inset-0 bg-gradient-to-r ..."></div> */}
+          {/* <div className="absolute inset-0 bg-[#67CBDD]/15"></div> */}
             
             {/* Container de texto no canto inferior direito - menor */}
             <div className="absolute bottom-24 md:bottom-32 right-4 md:right-8 z-20 max-w-xs md:max-w-md">
-              <div className="bg-white/10 backdrop-blur-md border-l-4 border-[#67CBDD] p-3 md:p-4 rounded-r-xl shadow-2xl">
+            <div className="bg-white/10 border-l-4 border-[#67CBDD] p-3 md:p-4 rounded-r-xl shadow-2xl">
                 <h2 className="text-sm md:text-base lg:text-lg font-bold text-white mb-2 leading-tight">
                   Muito mais recursos para as equipes de cuidado e para a segurança do paciente
                 </h2>
