@@ -52,7 +52,7 @@ export function HeroCarousel() {
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-[91vh] overflow-hidden">
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
@@ -70,6 +70,7 @@ export function HeroCarousel() {
               priority={index === 0}
               quality={100}
               sizes="100vw"
+              style={{ boxShadow: 'none' }}
             />
             {/* Overlay gradiente tecnológico */}
             <div className="absolute inset-0 bg-gradient-to-r from-secondary/85 via-secondary/70 to-transparent"></div>

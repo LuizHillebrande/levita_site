@@ -85,19 +85,19 @@ export function StatsCounter() {
           <div className="w-24 h-1 bg-[#67CBDD] mx-auto rounded-full"></div>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
           {stats.map((stat, index) => (
             <div
               key={index}
               className="text-center group"
             >
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-2 border-transparent hover:border-[#67CBDD] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#67CBDD] mb-3 group-hover:scale-110 transition-transform">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-2 border-transparent hover:border-[#67CBDD] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col items-center justify-center min-h-[180px]">
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#67CBDD] mb-3 group-hover:scale-110 transition-transform">
                   {stat.prefix}
                   {counters[index].toLocaleString('pt-BR')}
                   {stat.suffix}
                 </div>
-                <div className="text-sm md:text-base text-gray-700 font-semibold">
+                <div className="text-xs md:text-sm text-gray-700 font-semibold">
                   {stat.label}
                 </div>
               </div>

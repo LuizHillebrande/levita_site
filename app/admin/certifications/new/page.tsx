@@ -10,11 +10,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Upload, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
-export default function NewCategoryPage() {
+export default function NewCertificationPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [categoryImage, setCategoryImage] = useState<string | null>(null)
+  const [certificationImage, setCertificationImage] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -43,7 +43,7 @@ export default function NewCategoryPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('folder', 'categories')
+      formData.append('folder', 'certifications')
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -53,7 +53,7 @@ export default function NewCategoryPage() {
       const data = await res.json()
 
       if (res.ok && data.url) {
-        setCategoryImage(data.url)
+        setCertificationImage(data.url)
         setFormData({ ...formData, image: data.url })
       } else {
         alert(data.error || 'Erro ao fazer upload da imagem')
@@ -67,7 +67,7 @@ export default function NewCategoryPage() {
   }
 
   const removeImage = () => {
-    setCategoryImage(null)
+    setCertificationImage(null)
     setFormData({ ...formData, image: '' })
   }
 
@@ -76,20 +76,20 @@ export default function NewCategoryPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/categories', {
+      const res = await fetch('/api/certifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       if (res.ok) {
-        router.push('/admin/categories')
+        router.push('/admin/certifications')
       } else {
         const data = await res.json()
-        alert(data.error || 'Erro ao criar categoria')
+        alert(data.error || 'Erro ao criar certificação')
       }
     } catch (error) {
-      alert('Erro ao criar categoria')
+      alert('Erro ao criar certificação')
     } finally {
       setLoading(false)
     }
@@ -97,22 +97,22 @@ export default function NewCategoryPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-secondary mb-6">Nova Categoria</h1>
+      <h1 className="text-3xl font-bold text-secondary mb-6">Nova Certificação</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Informações da Categoria</CardTitle>
+          <CardTitle>Informações da Certificação</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">Nome da Categoria *</Label>
+              <Label htmlFor="name">Nome da Certificação *</Label>
               <Input
                 id="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: Camas"
+                placeholder="Ex: BPF ANVISA"
               />
             </div>
 
@@ -123,7 +123,7 @@ export default function NewCategoryPage() {
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Descrição da categoria"
+                placeholder="Ex: BOAS PRÁTICAS DE FABRICAÇÃO"
               />
             </div>
 
@@ -139,16 +139,16 @@ export default function NewCategoryPage() {
             </div>
 
             <div>
-              <Label htmlFor="image">Imagem da Categoria</Label>
+              <Label htmlFor="image">Logo da Certificação</Label>
               <div className="mt-2">
-                {categoryImage ? (
+                {certificationImage ? (
                   <div className="relative w-full max-w-md">
-                    <div className="relative aspect-square w-full rounded-lg overflow-hidden border-2 border-gray-200">
+                    <div className="relative aspect-square w-full max-w-xs rounded-lg overflow-hidden border-2 border-gray-200 bg-white p-4">
                       <Image
-                        src={categoryImage}
+                        src={certificationImage}
                         alt="Preview"
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                     </div>
                     <Button
@@ -198,8 +198,8 @@ export default function NewCategoryPage() {
             </div>
 
             <div className="flex space-x-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : 'Salvar Categoria'}
+              <Button type="submit" disabled={loading} className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+                {loading ? 'Salvando...' : 'Salvar Certificação'}
               </Button>
               <Button
                 type="button"
@@ -215,5 +215,3 @@ export default function NewCategoryPage() {
     </div>
   )
 }
-
-

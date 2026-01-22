@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,17 +10,41 @@ import { Textarea } from '@/components/ui/textarea'
 import { Upload, X, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 
-export default function NewCategoryPage() {
+export default function EditCertificationPage() {
   const router = useRouter()
+  const params = useParams()
+  const certificationId = params.id as string
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [categoryImage, setCategoryImage] = useState<string | null>(null)
+  const [loadingCertification, setLoadingCertification] = useState(true)
+  const [certificationImage, setCertificationImage] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     order: 0,
     image: '',
+    active: true,
   })
+
+  useEffect(() => {
+    fetch(`/api/certifications/${certificationId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.certification) {
+          setFormData({
+            name: data.certification.name || '',
+            description: data.certification.description || '',
+            order: data.certification.order || 0,
+            image: data.certification.image || '',
+            active: data.certification.active !== false,
+          })
+          if (data.certification.image) {
+            setCertificationImage(data.certification.image)
+          }
+        }
+        setLoadingCertification(false)
+      })
+  }, [certificationId])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -43,7 +67,7 @@ export default function NewCategoryPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('folder', 'categories')
+      formData.append('folder', 'certifications')
 
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -53,7 +77,7 @@ export default function NewCategoryPage() {
       const data = await res.json()
 
       if (res.ok && data.url) {
-        setCategoryImage(data.url)
+        setCertificationImage(data.url)
         setFormData({ ...formData, image: data.url })
       } else {
         alert(data.error || 'Erro ao fazer upload da imagem')
@@ -67,7 +91,7 @@ export default function NewCategoryPage() {
   }
 
   const removeImage = () => {
-    setCategoryImage(null)
+    setCertificationImage(null)
     setFormData({ ...formData, image: '' })
   }
 
@@ -76,43 +100,46 @@ export default function NewCategoryPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/categories', {
-        method: 'POST',
+      const res = await fetch(`/api/certifications/${certificationId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       if (res.ok) {
-        router.push('/admin/categories')
+        router.push('/admin/certifications')
       } else {
         const data = await res.json()
-        alert(data.error || 'Erro ao criar categoria')
+        alert(data.error || 'Erro ao atualizar certificação')
       }
     } catch (error) {
-      alert('Erro ao criar categoria')
+      alert('Erro ao atualizar certificação')
     } finally {
       setLoading(false)
     }
   }
 
+  if (loadingCertification) {
+    return <div className="text-center py-12">Carregando...</div>
+  }
+
   return (
     <div>
-      <h1 className="text-3xl font-bold text-secondary mb-6">Nova Categoria</h1>
+      <h1 className="text-3xl font-bold text-secondary mb-6">Editar Certificação</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>Informações da Categoria</CardTitle>
+          <CardTitle>Informações da Certificação</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="name">Nome da Categoria *</Label>
+              <Label htmlFor="name">Nome da Certificação *</Label>
               <Input
                 id="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ex: Camas"
               />
             </div>
 
@@ -123,7 +150,6 @@ export default function NewCategoryPage() {
                 rows={3}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Descrição da categoria"
               />
             </div>
 
@@ -134,21 +160,36 @@ export default function NewCategoryPage() {
                 type="number"
                 value={formData.order}
                 onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                placeholder="0"
               />
             </div>
 
             <div>
-              <Label htmlFor="image">Imagem da Categoria</Label>
+              <Label htmlFor="active">Status</Label>
+              <div className="flex items-center space-x-2 mt-2">
+                <input
+                  type="checkbox"
+                  id="active"
+                  checked={formData.active}
+                  onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                  className="h-4 w-4 text-[#67CBDD]"
+                />
+                <Label htmlFor="active" className="cursor-pointer">
+                  Certificação ativa
+                </Label>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="image">Logo da Certificação</Label>
               <div className="mt-2">
-                {categoryImage ? (
+                {certificationImage ? (
                   <div className="relative w-full max-w-md">
-                    <div className="relative aspect-square w-full rounded-lg overflow-hidden border-2 border-gray-200">
+                    <div className="relative aspect-square w-full max-w-xs rounded-lg overflow-hidden border-2 border-gray-200 bg-white p-4">
                       <Image
-                        src={categoryImage}
+                        src={certificationImage}
                         alt="Preview"
                         fill
-                        className="object-cover"
+                        className="object-contain"
                       />
                     </div>
                     <Button
@@ -198,8 +239,8 @@ export default function NewCategoryPage() {
             </div>
 
             <div className="flex space-x-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : 'Salvar Categoria'}
+              <Button type="submit" disabled={loading} className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+                {loading ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
               <Button
                 type="button"
@@ -215,5 +256,3 @@ export default function NewCategoryPage() {
     </div>
   )
 }
-
-

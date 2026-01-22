@@ -2,21 +2,58 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Menu, X, Search } from 'lucide-react'
+import { Menu, X, Search, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    // Buscar categorias
+    fetch('/api/categories')
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data.categories || [])
+      })
+      .catch((error) => {
+        console.error('Error fetching categories:', error)
+      })
+  }, [])
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProductsDropdownOpen(false)
+      }
+    }
+
+    if (isProductsDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isProductsDropdownOpen])
 
   const menuItems = [
     { href: '/', label: 'Home' },
-    { href: '/produtos', label: 'Produtos' },
     { href: '/sobre', label: 'Quem Somos' },
     { href: '/contato', label: 'Contato' },
   ]
@@ -33,7 +70,7 @@ export function Navbar() {
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-20 md:h-24">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image
@@ -41,7 +78,7 @@ export function Navbar() {
               alt="Levita Móveis Hospitalares"
               width={200}
               height={84}
-              className="h-14 md:h-20 w-auto"
+              className="h-16 md:h-24 w-auto"
               priority
             />
           </Link>
@@ -52,11 +89,44 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-[#67CBDD] transition-colors font-medium text-sm"
+                className="text-gray-700 hover:text-[#67CBDD] transition-colors font-medium text-base"
               >
                 {item.label}
               </Link>
             ))}
+            {/* Produtos Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
+                className="text-gray-700 hover:text-[#67CBDD] transition-colors font-medium text-base flex items-center space-x-1"
+              >
+                <span>Produtos</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isProductsDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isProductsDropdownOpen && categories.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <Link
+                    href="/produtos"
+                    className="block px-4 py-2 text-gray-700 hover:bg-[#67CBDD] hover:text-white transition-colors text-base"
+                    onClick={() => setIsProductsDropdownOpen(false)}
+                  >
+                    Todos os Produtos
+                  </Link>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  {categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      href={`/produtos/${category.slug}`}
+                      className="block px-4 py-2 text-gray-700 hover:bg-[#67CBDD] hover:text-white transition-colors text-base"
+                      onClick={() => setIsProductsDropdownOpen(false)}
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Search Bar Desktop */}
@@ -75,7 +145,7 @@ export function Navbar() {
 
           {/* Actions Desktop */}
           <div className="hidden md:flex items-center space-x-3 ml-4">
-            <Button asChild size="sm" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+            <Button asChild size="default" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white text-base">
               <Link href="/contato">Orçamento</Link>
             </Button>
           </div>
@@ -127,14 +197,34 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="block py-2 text-gray-700 hover:text-[#67CBDD] transition-colors"
+                className="block py-2 text-gray-700 hover:text-[#67CBDD] transition-colors text-base"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
               </Link>
             ))}
+            {/* Mobile Produtos */}
+            <div className="py-2">
+              <Link
+                href="/produtos"
+                className="block py-2 text-gray-700 hover:text-[#67CBDD] transition-colors text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Todos os Produtos
+              </Link>
+              {categories.map((category) => (
+                <Link
+                  key={category.id}
+                  href={`/produtos/${category.slug}`}
+                  className="block py-2 pl-4 text-gray-600 hover:text-[#67CBDD] transition-colors text-sm"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {category.name}
+                </Link>
+              ))}
+            </div>
             <div className="pt-4 border-t mt-4">
-              <Button asChild className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+              <Button asChild className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white text-base">
                 <Link href="/contato">Solicitar Orçamento</Link>
               </Button>
             </div>

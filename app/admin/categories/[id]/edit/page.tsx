@@ -7,17 +7,22 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Upload, X, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 export default function EditCategoryPage() {
   const router = useRouter()
   const params = useParams()
   const categoryId = params.id as string
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [loadingCategory, setLoadingCategory] = useState(true)
+  const [categoryImage, setCategoryImage] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     order: 0,
+    image: '',
   })
 
   useEffect(() => {
@@ -29,11 +34,64 @@ export default function EditCategoryPage() {
             name: data.category.name || '',
             description: data.category.description || '',
             order: data.category.order || 0,
+            image: data.category.image || '',
           })
+          if (data.category.image) {
+            setCategoryImage(data.category.image)
+          }
         }
         setLoadingCategory(false)
       })
   }, [categoryId])
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione uma imagem válida')
+      return
+    }
+
+    // Validar tamanho (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB')
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'categories')
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        setCategoryImage(data.url)
+        setFormData({ ...formData, image: data.url })
+      } else {
+        alert(data.error || 'Erro ao fazer upload da imagem')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      alert('Erro ao fazer upload da imagem')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removeImage = () => {
+    setCategoryImage(null)
+    setFormData({ ...formData, image: '' })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,6 +159,65 @@ export default function EditCategoryPage() {
                 value={formData.order}
                 onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="image">Imagem da Categoria</Label>
+              <div className="mt-2">
+                {categoryImage ? (
+                  <div className="relative w-full max-w-md">
+                    <div className="relative aspect-square w-full rounded-lg overflow-hidden border-2 border-gray-200">
+                      <Image
+                        src={categoryImage}
+                        alt="Preview"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={removeImage}
+                      className="mt-2"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remover Imagem
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#67CBDD] transition-colors">
+                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <Label
+                      htmlFor="image-upload"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#67CBDD] text-white rounded-lg hover:bg-[#4FA8B8] transition-colors"
+                    >
+                      {uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Selecionar Imagem
+                        </>
+                      )}
+                    </Label>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                    <p className="text-sm text-gray-500 mt-2">
+                      PNG, JPG ou WEBP (máx. 5MB)
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex space-x-4">

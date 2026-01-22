@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,14 +37,21 @@ interface Category {
 }
 
 export default function ProdutosPage() {
+  const searchParams = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(searchParams.get('search') || '')
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [sortBy, setSortBy] = useState<string>('newest')
 
   useEffect(() => {
+    // Ler parâmetro de busca da URL
+    const searchParam = searchParams.get('search')
+    if (searchParam) {
+      setSearch(searchParam)
+    }
+
     Promise.all([
       fetch('/api/products?active=true').then((res) => res.json()),
       fetch('/api/categories').then((res) => res.json()),
@@ -55,7 +63,7 @@ export default function ProdutosPage() {
       console.error('Error fetching data:', error)
       setLoading(false)
     })
-  }, [])
+  }, [searchParams])
 
   // Filtrar e ordenar produtos
   const filteredProducts = products

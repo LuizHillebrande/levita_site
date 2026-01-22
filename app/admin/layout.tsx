@@ -9,6 +9,7 @@ import {
   Package,
   FolderTree,
   FileText,
+  Award,
   LogOut,
   Menu,
   X,
@@ -54,6 +55,7 @@ export default function AdminLayout({
   const menuItems = [
     { href: '/admin/products', label: 'Produtos', icon: Package },
     { href: '/admin/categories', label: 'Categorias', icon: FolderTree },
+    { href: '/admin/certifications', label: 'Certificações', icon: Award },
     { href: '/admin/pages', label: 'Páginas', icon: FileText },
   ]
 

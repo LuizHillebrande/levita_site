@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowRight, CheckCircle } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
 import { RotatingText } from '@/components/rotating-text'
 import { HeroCarousel } from '@/components/hero-carousel'
 import { StatsCounter } from '@/components/stats-counter'
 import { QuemSomosSection } from '@/components/quem-somos-section'
 import { FeaturedProducts } from '@/components/featured-products'
+import { CertificationsSection } from '@/components/certifications-section'
+import { CategoriesSection } from '@/components/categories-section'
 
 export default function Home() {
   return (
@@ -23,37 +24,14 @@ export default function Home() {
       {/* Quem Somos */}
       <QuemSomosSection />
 
-      {/* Categorias - Estilo Tecnológico */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-secondary mb-4">
-              Nossas Categorias
-            </h2>
-            <div className="w-24 h-1 bg-[#67CBDD] mx-auto rounded-full"></div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['Camas', 'Armários', 'Berços', 'Carros', 'Mesas', 'Suportes', 'Diversos'].map((category, index) => (
-              <Card 
-                key={category} 
-                className="group hover:shadow-2xl transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-[#67CBDD] hover:-translate-y-2 bg-white"
-              >
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-[#67CBDD]/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#67CBDD] transition-colors">
-                    <span className="text-2xl group-hover:scale-110 transition-transform">🏥</span>
-                  </div>
-                  <CardTitle className="text-lg font-semibold text-secondary group-hover:text-[#67CBDD] transition-colors">
-                    {category}
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Categorias */}
+      <CategoriesSection />
 
       {/* Produtos em Destaque - Estilo Tecnológico */}
       <FeaturedProducts />
+
+      {/* Certificações */}
+      <CertificationsSection />
 
       {/* Sobre a Empresa - Estilo Tecnológico */}
       <section className="py-20 bg-gradient-to-br from-[#67CBDD]/10 via-white to-secondary/5">
