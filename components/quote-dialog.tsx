@@ -20,9 +20,11 @@ interface QuoteDialogProps {
   onOpenChange: (open: boolean) => void
   productName?: string
   productSlug?: string
+  selectedOptionals?: string[]
+  productId?: string
 }
 
-export function QuoteDialog({ open, onOpenChange, productName, productSlug }: QuoteDialogProps) {
+export function QuoteDialog({ open, onOpenChange, productName, productSlug, selectedOptionals = [], productId }: QuoteDialogProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -44,6 +46,8 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug }: Qu
           ...formData,
           productName,
           productSlug,
+          selectedOptionals,
+          productId,
         }),
       })
 

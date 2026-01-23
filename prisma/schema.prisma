@@ -36,22 +36,23 @@ model Category {
 }
 
 model Product {
-  id          String         @id @default(cuid())
-  name        String
-  slug        String         @unique
-  description String?
+  id               String            @id @default(cuid())
+  name             String
+  slug             String            @unique
+  description      String?
   shortDescription String?
-  price       Float?
-  featured    Boolean        @default(false)
-  active      Boolean        @default(true)
-  categoryId  String?
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images      ProductImage[]
-  specifications String?     // Para armazenar ficha técnica como JSON (String no SQLite)
-  documentation String?      // URLs de PDFs/manuais/documentação (JSON array)
-  technicalSpecs String?     // Especificações técnicas detalhadas (JSON)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  price            Float?
+  featured         Boolean           @default(false)
+  active           Boolean           @default(true)
+  categoryId       String?
+  category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images           ProductImage[]
+  optionals        ProductOptional[]
+  specifications   String? // Para armazenar ficha técnica como JSON (String no SQLite)
+  documentation    String? // URLs de PDFs/manuais/documentação (JSON array)
+  technicalSpecs   String? // Especificações técnicas detalhadas (JSON)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 model ProductImage {
@@ -65,15 +66,15 @@ model ProductImage {
 }
 
 model Page {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  title     String
-  content   String   // Markdown ou HTML
-  metaTitle String?
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  content         String // Markdown ou HTML
+  metaTitle       String?
   metaDescription String?
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Contact {
@@ -83,8 +84,32 @@ model Contact {
   phone     String?
   subject   String?
   message   String
-  productId String?  // Se o contato veio de um produto específico
+  productId String? // Se o contato veio de um produto específico
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
 
+model Certification {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  image       String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProductOptional {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float?
+  showPrice   Boolean  @default(false)
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

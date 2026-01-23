@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { Plus, X, FileText, Upload, Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import { OptionalsSection } from '../optionals-section'
 
 interface Category {
   id: string
@@ -714,6 +715,9 @@ export default function EditProductPage() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Opcionais do Produto */}
+        <OptionalsSection productId={productId} />
 
         {/* Botões de Ação */}
         <div className="flex space-x-4">

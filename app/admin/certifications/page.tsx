@@ -28,14 +28,28 @@ export default function AdminCertificationsPage() {
 
   const fetchCertifications = async () => {
     try {
-      const res = await fetch('/api/certifications')
-      const data = await res.json()
       // Buscar todas as certificações (incluindo inativas) para o admin
       const allRes = await fetch('/api/certifications/all')
+      if (!allRes.ok) {
+        console.error('Error fetching certifications:', allRes.statusText)
+        // Se falhar, tenta buscar apenas as ativas
+        const res = await fetch('/api/certifications')
+        const data = await res.json()
+        setCertifications(data.certifications || [])
+        return
+      }
       const allData = await allRes.json()
       setCertifications(allData.certifications || [])
     } catch (error) {
       console.error('Error fetching certifications:', error)
+      // Em caso de erro, tenta buscar apenas as ativas
+      try {
+        const res = await fetch('/api/certifications')
+        const data = await res.json()
+        setCertifications(data.certifications || [])
+      } catch (e) {
+        console.error('Error fetching active certifications:', e)
+      }
     } finally {
       setLoading(false)
     }

@@ -17,7 +17,12 @@ export function CertificationsSection() {
 
   useEffect(() => {
     fetch('/api/certifications')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        return res.json()
+      })
       .then((data) => {
         // Ordenar por campo 'order' e depois por nome
         const sortedCertifications = (data.certifications || []).sort((a: Certification, b: Certification) => {

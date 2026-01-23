@@ -57,6 +57,28 @@ async function main() {
     }
   }
 
+  // Criar certificações padrão
+  const certifications = [
+    { name: 'BPF ANVISA', description: 'BOAS PRÁTICAS DE FABRICAÇÃO', order: 1 },
+    { name: 'INC ISO 9001', description: 'ABNT NBR ISO 9001', order: 2 },
+    { name: 'INC ISO 13485', description: 'ABNT NBR ISO 13485', order: 3 },
+    { name: 'NBR IEC 60601-2-52', description: 'CERTIFICADA CONFORME NOVOS PADRÕES', order: 4 },
+    { name: 'CE Mark', description: 'Conformidade Europeia', order: 5 },
+    { name: 'Invima', description: 'Instituto Nacional de Vigilancia de Medicamentos y Alimentos', order: 6 },
+    { name: 'DINAVISA', description: 'Dirección Nacional de Vigilancia Sanitaria', order: 7 },
+  ]
+
+  for (const cert of certifications) {
+    const existing = await prisma.certification.findFirst({
+      where: { name: cert.name },
+    })
+
+    if (!existing) {
+      await prisma.certification.create({ data: cert })
+      console.log(`✅ Certificação criada: ${cert.name}`)
+    }
+  }
+
   // Criar página "Sobre"
   const sobreContent = `Fabricantes de móveis hospitalares, nos consolidamos como a marca mais lembrada pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.
 

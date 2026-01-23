@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
-    const { name, email, phone, message, productName, productSlug } = data
+    const { name, email, phone, message, productName, productSlug, selectedOptionals = [], productId } = data
 
     // Validar campos obrigatórios
     if (!name || !email || !message) {
@@ -38,6 +39,55 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Buscar informações dos opcionais selecionados
+    let optionalsInfo = ''
+    let optionalsHtml = ''
+    let optionals: any[] = []
+    
+    if (selectedOptionals && selectedOptionals.length > 0 && productId) {
+      try {
+        optionals = await prisma.productOptional.findMany({
+          where: {
+            id: { in: selectedOptionals },
+            active: true,
+          },
+        })
+
+        if (optionals.length > 0) {
+          optionalsInfo = '\n\n🛏️ OPCIONAIS SELECIONADOS:\n'
+          optionals.forEach((opt) => {
+            const priceInfo = opt.showPrice && opt.price
+              ? ` - R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+              : ' - Sob consulta'
+            optionalsInfo += `✓ ${opt.name}${priceInfo}\n`
+            if (opt.description) {
+              optionalsInfo += `  ${opt.description}\n`
+            }
+          })
+
+          // HTML para opcionais
+          optionalsHtml = `
+          <div style="background-color: #e8f5e9; padding: 20px; border-left: 4px solid #67CBDD; margin: 20px 0; border-radius: 4px;">
+            <h3 style="margin-top: 0; color: #67CBDD;">🛏️ Opcionais Selecionados:</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              ${optionals.map(opt => {
+                const priceInfo = opt.showPrice && opt.price
+                  ? ` - <strong>R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>`
+                  : ' - <em>Sob consulta</em>'
+                return `<li style="margin-bottom: 10px;">
+                  <strong>✓ ${opt.name}</strong>${priceInfo}
+                  ${opt.description ? `<br><span style="color: #666; font-size: 14px;">${opt.description}</span>` : ''}
+                </li>`
+              }).join('')}
+            </ul>
+          </div>
+          `
+        }
+      } catch (error) {
+        console.error('Error fetching optionals:', error)
+      }
+    }
+
     // Montar o conteúdo do email
     const productInfo = productName 
       ? `\n\nProduto de interesse: ${productName}\nLink: ${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/produtos/${productSlug || ''}`
@@ -49,7 +99,7 @@ Nova solicitação de orçamento recebida!
 Nome: ${name}
 Email: ${email}
 Telefone: ${phone || 'Não informado'}
-${productInfo}
+${productInfo}${optionalsInfo}
 
 Mensagem:
 ${message}
@@ -76,6 +126,8 @@ Este email foi enviado automaticamente pelo sistema de solicitação de orçamen
             ${productName ? `<p><strong>Produto de interesse:</strong> ${productName}</p>` : ''}
             ${productSlug ? `<p><strong>Link do produto:</strong> <a href="${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/produtos/${productSlug}">Ver produto</a></p>` : ''}
           </div>
+          
+          ${optionalsHtml}
           
           <div style="background-color: #ffffff; padding: 20px; border-left: 4px solid #67CBDD; margin: 20px 0;">
             <h3 style="margin-top: 0;">Mensagem:</h3>

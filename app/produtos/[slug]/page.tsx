@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Search, ArrowLeft } from 'lucide-react'
 import { QuoteDialog } from '@/components/quote-dialog'
+import { BuildYourBed } from '@/components/build-your-bed'
 import Link from 'next/link'
 
 interface Product {
@@ -51,6 +52,7 @@ export default function ProdutoPage() {
   const [isCategory, setIsCategory] = useState<boolean | null>(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
+  const [selectedOptionals, setSelectedOptionals] = useState<string[]>([])
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<string>('newest')
 
@@ -353,9 +355,17 @@ export default function ProdutoPage() {
             </Card>
           )}
 
+          {/* Monte sua Cama */}
+          {product && !isCategory && (
+            <BuildYourBed
+              productId={product.id}
+              onSelectionChange={setSelectedOptionals}
+            />
+          )}
+
           <Button 
             size="lg" 
-            className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white"
+            className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white mt-6"
             onClick={() => setQuoteDialogOpen(true)}
           >
             Solicitar Orçamento
@@ -381,6 +391,8 @@ export default function ProdutoPage() {
         onOpenChange={setQuoteDialogOpen}
         productName={product.name}
         productSlug={product.slug}
+        selectedOptionals={selectedOptionals}
+        productId={product.id}
       />
     </div>
   )

@@ -4,16 +4,18 @@ import { verifyAuth } from '@/lib/auth-middleware'
 
 export async function GET() {
   try {
+    console.log('Fetching certifications from database...')
     const certifications = await prisma.certification.findMany({
       where: { active: true },
       orderBy: { order: 'asc' },
     })
 
+    console.log(`Found ${certifications.length} active certifications`)
     return NextResponse.json({ certifications })
   } catch (error) {
     console.error('Error fetching certifications:', error)
     return NextResponse.json(
-      { error: 'Erro ao buscar certificações' },
+      { error: 'Erro ao buscar certificações', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }
