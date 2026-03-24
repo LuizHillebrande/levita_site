@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/auth-middleware'
-import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth) {
