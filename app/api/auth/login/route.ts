@@ -43,13 +43,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Buscar ou criar usuário admin
-    const { getUserByEmail, createAdminUser } = await import('@/lib/auth')
-    let user = await getUserByEmail(authorizedEmail)
-    
-    if (!user) {
-      // Criar usuário se não existir (senha será hasheada no banco, mas verificamos com .env)
-      user = await createAdminUser(authorizedEmail, envPassword, 'Administrador')
+    // Buscar ou criar usuário admin (com fallback caso o banco esteja indisponível)
+    let user: { id: string; email: string; name: string; role: string }
+    try {
+      const { getUserByEmail, createAdminUser } = await import('@/lib/auth')
+      const dbUser = await getUserByEmail(authorizedEmail)
+      if (dbUser) {
+        user = dbUser
+      } else {
+        // Criar usuário se não existir (senha será hasheada no banco, mas verificamos com .env)
+        user = await createAdminUser(authorizedEmail, envPassword, 'Administrador')
+      }
+    } catch (dbError) {
+      console.error('Auth DB unavailable, using fallback admin identity:', dbError)
+      user = {
+        id: 'admin-fallback',
+        email: authorizedEmail,
+        name: 'Administrador',
+        role: 'admin',
+      }
     }
 
     const token = await new SignJWT({ userId: user.id, email: user.email, role: user.role })

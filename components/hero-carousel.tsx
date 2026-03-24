@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 export function HeroCarousel() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const [touchEndX, setTouchEndX] = useState<number | null>(null)
 
   // Imagens do carrossel - adicione suas imagens aqui
   const slides = [
     {
       image: '/images/banners/home-01.jpg',
+      mobileImage: '/images/banners/home-01-celular.png',
       title: 'Móveis Hospitalares de Alta Qualidade',
       description: 'Buscamos o aperfeiçoamento contínuo da qualidade de nossos produtos e serviços, visando atender e superar os requisitos de nossos clientes.',
       buttonText: 'Ver Produtos',
@@ -21,6 +23,7 @@ export function HeroCarousel() {
     },
     {
       image: '/images/banners/home-02.jpg',
+      mobileImage: '/images/banners/home-02-celular.png',
       title: 'Soluções Hospitalares Completas',
       description: 'Pioneiros na região de Londrina, oferecemos móveis hospitalares de alta durabilidade que atendem minuciosamente as exigências do mercado.',
       buttonText: 'Solicitar Orçamento',
@@ -51,8 +54,31 @@ export function HeroCarousel() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
 
+  const minSwipeDistance = 50
+
+  const onTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(null)
+    setTouchStartX(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    setTouchEndX(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (touchStartX === null || touchEndX === null) return
+    const distance = touchStartX - touchEndX
+    if (distance > minSwipeDistance) nextSlide()
+    if (distance < -minSwipeDistance) prevSlide()
+  }
+
   return (
-    <div className="relative w-full h-[91vh] overflow-hidden">
+    <div
+      className="relative w-full h-[91vh] overflow-hidden"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
@@ -66,7 +92,18 @@ export function HeroCarousel() {
               src={slide.image}
               alt={slide.title}
               fill
-              className="object-cover"
+              className="hidden md:block object-cover"
+              priority={index === 0}
+              quality={100}
+              sizes="100vw"
+              unoptimized
+              style={{ boxShadow: 'none', imageRendering: 'auto' }}
+            />
+            <Image
+              src={slide.mobileImage || slide.image}
+              alt={slide.title}
+              fill
+              className="md:hidden object-cover"
               priority={index === 0}
               quality={100}
               sizes="100vw"
@@ -78,13 +115,13 @@ export function HeroCarousel() {
           {/* <div className="absolute inset-0 bg-[#67CBDD]/15"></div> */}
             
             {/* Container de texto no canto inferior direito - menor */}
-            <div className="absolute bottom-24 md:bottom-32 right-4 md:right-8 z-20 max-w-xs md:max-w-md">
-            <div className="bg-white/10 border-l-4 border-[#67CBDD] p-3 md:p-4 rounded-r-xl shadow-2xl">
-                <h2 className="text-sm md:text-base lg:text-lg font-bold text-white mb-2 leading-tight">
+            <div className="absolute top-20 md:top-auto md:bottom-32 right-4 md:right-8 z-20 max-w-[calc(100%-2rem)] md:max-w-md">
+              <div className="p-0">
+                <h2 className="text-base md:text-xl lg:text-2xl font-bold text-white mb-2 leading-tight">
                   Muito mais recursos para as equipes de cuidado e para a segurança do paciente
                 </h2>
                 {slide.text && (
-                  <p className="text-white/95 text-xs md:text-sm leading-relaxed mb-3">
+                  <p className="text-white text-sm md:text-base leading-relaxed mb-3">
                     {slide.text}
                   </p>
                 )}
@@ -96,22 +133,6 @@ export function HeroCarousel() {
           </div>
         </div>
       ))}
-
-      {/* Botões de navegação */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-secondary p-2 rounded-full transition-all"
-        aria-label="Slide anterior"
-      >
-        <ChevronLeft className="h-6 w-6" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-secondary p-2 rounded-full transition-all"
-        aria-label="Próximo slide"
-      >
-        <ChevronRight className="h-6 w-6" />
-      </button>
 
       {/* Indicadores de slide */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-2">

@@ -39,7 +39,7 @@ export function QuemSomosSection() {
   }, [])
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-24 bg-gradient-to-br from-white via-gray-50 to-[#67CBDD]/5 relative overflow-hidden">
+    <section id="quem-somos" ref={sectionRef} className="scroll-mt-28 py-20 md:py-24 bg-gradient-to-br from-white via-gray-50 to-[#67CBDD]/5 relative overflow-hidden">
       {/* Elementos decorativos */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#67CBDD]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       

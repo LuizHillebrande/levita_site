@@ -54,7 +54,7 @@ export function Navbar() {
 
   const menuItems = [
     { href: '/', label: 'Home' },
-    { href: '/sobre', label: 'Quem Somos' },
+    { href: '/#quem-somos', label: 'Quem Somos' },
     { href: '/produtos', label: 'Monte sua Cama' },
     { href: '/contato', label: 'Contato' },
   ]

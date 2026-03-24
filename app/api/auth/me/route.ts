@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth) {
@@ -15,21 +14,29 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: auth.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-    })
+    let user: { id: string; email: string; name: string; role: string } | null = null
+    try {
+      const { prisma } = await import('@/lib/prisma')
+      user = await prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      })
+    } catch (dbError) {
+      console.error('Auth /me DB unavailable, using token payload:', dbError)
+    }
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Usuário não encontrado' },
-        { status: 404 }
-      )
+      user = {
+        id: auth.userId || 'admin-fallback',
+        email: auth.email,
+        name: 'Administrador',
+        role: auth.role,
+      }
     }
 
     return NextResponse.json({ user })
