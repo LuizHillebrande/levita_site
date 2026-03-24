@@ -1,0 +1,7 @@
+[{"id":"cmkqxuts30000bh26y2mj9ief","name":"BPF ANVISA","description":"BOAS PRÁTICAS DE FABRICAÇÃO do pu","image":"https://res.cloudinary.com/dlsbjcrc2/image/upload/v1769176924/levita-moveis/certifications/yihbppqnsodwhwj7upjf.png","order":1,"active":1,"createdAt":1769176243012,"updatedAt":1769176948354},
+{"id":"cmkqxuts40001bh2626mdfsws","name":"INC ISO 9001","description":"ABNT NBR ISO 9001","image":null,"order":2,"active":1,"createdAt":1769176243013,"updatedAt":1769176243013},
+{"id":"cmkqxuts50002bh26yz9t5u3f","name":"INC ISO 13485","description":"ABNT NBR ISO 13485","image":null,"order":3,"active":1,"createdAt":1769176243014,"updatedAt":1769176243014},
+{"id":"cmkqxuts60003bh267q9be5uh","name":"NBR IEC 60601-2-52","description":"CERTIFICADA CONFORME NOVOS PADRÕES","image":null,"order":4,"active":1,"createdAt":1769176243014,"updatedAt":1769176243014},
+{"id":"cmkqxuts70004bh263060dhy3","name":"CE Mark","description":"Conformidade Europeia","image":null,"order":5,"active":1,"createdAt":1769176243016,"updatedAt":1769176243016},
+{"id":"cmkqxuts80005bh26fosxzflf","name":"Invima","description":"Instituto Nacional de Vigilancia de Medicamentos y Alimentos","image":null,"order":6,"active":1,"createdAt":1769176243016,"updatedAt":1769176243016},
+{"id":"cmkqxuts80006bh262qbfa1pn","name":"DINAVISA","description":"Dirección Nacional de Vigilancia Sanitaria","image":null,"order":7,"active":1,"createdAt":1769176243017,"updatedAt":1769176243017}]

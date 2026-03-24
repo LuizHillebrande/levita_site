@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   // Para migrar para Postgres no futuro, apenas altere para:
   // provider = "postgresql"
   // e ajuste a DATABASE_URL no .env
