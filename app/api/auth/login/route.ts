@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserByEmail } from '@/lib/auth'
 import { SignJWT } from 'jose'
-
-const secret = new TextEncoder().encode(
-  process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production'
-)
 
 export async function POST(request: NextRequest) {
   try {
+    const secret = new TextEncoder().encode(
+      process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production'
+    )
     const { email, password } = await request.json()
 
     if (!email || !password) {
@@ -44,11 +42,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Buscar ou criar usuário admin
+    const { getUserByEmail, createAdminUser } = await import('@/lib/auth')
     let user = await getUserByEmail(authorizedEmail)
     
     if (!user) {
       // Criar usuário se não existir (senha será hasheada no banco, mas verificamos com .env)
-      const { createAdminUser } = await import('@/lib/auth')
       user = await createAdminUser(authorizedEmail, envPassword, 'Administrador')
     }
 
