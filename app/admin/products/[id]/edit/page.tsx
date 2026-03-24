@@ -471,7 +471,7 @@ export default function EditProductPage() {
                 Produto em Destaque
               </Label>
               <span className="text-sm text-gray-600 ml-2">
-                (Aparecerá na seção "Produtos em Destaque" da página inicial)
+                (Aparecerá na seção &quot;Produtos em Destaque&quot; da página inicial)
               </span>
             </div>
 

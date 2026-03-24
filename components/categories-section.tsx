@@ -23,8 +23,10 @@ export function CategoriesSection() {
       .then((data) => {
         // Ordenar por campo 'order' e depois por nome
         const sortedCategories = (data.categories || []).sort((a: Category, b: Category) => {
-          if (a.order !== b.order) {
-            return a.order - b.order
+          const aOrder = a.order ?? 0
+          const bOrder = b.order ?? 0
+          if (aOrder !== bOrder) {
+            return aOrder - bOrder
           }
           return a.name.localeCompare(b.name)
         })
