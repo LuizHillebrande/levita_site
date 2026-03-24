@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth-middleware'
 import { slugify } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const category = await prisma.category.findUnique({
       where: { id: params.id },
     })
@@ -34,6 +36,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {
@@ -79,6 +82,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth-middleware'
 
 // PUT - Atualizar opcional
@@ -8,6 +7,7 @@ export async function PUT(
   { params }: { params: { optionalId: string } }
 ) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {
@@ -55,6 +55,7 @@ export async function DELETE(
   { params }: { params: { optionalId: string } }
 ) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {

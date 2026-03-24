@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth-middleware'
 
 export async function GET() {
   try {
+    const { prisma } = await import('@/lib/prisma')
     console.log('Fetching certifications from database...')
     const certifications = await prisma.certification.findMany({
       where: { active: true },
@@ -23,6 +23,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {

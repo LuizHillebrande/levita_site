@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
-import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const data = await request.json()
     const { name, email, phone, message, productName, productSlug, selectedOptionals = [], productId } = data
 

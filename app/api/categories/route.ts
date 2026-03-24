@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { verifyAuth } from '@/lib/auth-middleware'
 import { slugify } from '@/lib/utils'
 
 export async function GET() {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const categories = await prisma.category.findMany({
       orderBy: { order: 'asc' },
       include: {
@@ -26,6 +26,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const { prisma } = await import('@/lib/prisma')
     const auth = await verifyAuth(request)
 
     if (!auth || auth.role !== 'admin') {
