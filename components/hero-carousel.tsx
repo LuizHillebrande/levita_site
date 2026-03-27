@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 export function HeroCarousel() {
@@ -13,8 +12,8 @@ export function HeroCarousel() {
   // Imagens do carrossel - adicione suas imagens aqui
   const slides = [
     {
-      image: '/images/banners/home-01.jpg',
-      mobileImage: '/images/banners/home-01-celular.png',
+      imageDesktop: '/images/banners/home-01-desktop.png',
+      imageMobile: '/images/banners/home-01-mobile.png',
       title: 'Móveis Hospitalares de Alta Qualidade',
       description: 'Buscamos o aperfeiçoamento contínuo da qualidade de nossos produtos e serviços, visando atender e superar os requisitos de nossos clientes.',
       buttonText: 'Ver Produtos',
@@ -22,8 +21,8 @@ export function HeroCarousel() {
       text: 'A marca mais lembrada pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.',
     },
     {
-      image: '/images/banners/home-02.jpg',
-      mobileImage: '/images/banners/home-02-celular.png',
+      imageDesktop: '/images/banners/home-02-desktop.png',
+      imageMobile: '/images/banners/home-02-mobile.png',
       title: 'Soluções Hospitalares Completas',
       description: 'Pioneiros na região de Londrina, oferecemos móveis hospitalares de alta durabilidade que atendem minuciosamente as exigências do mercado.',
       buttonText: 'Solicitar Orçamento',
@@ -41,10 +40,6 @@ export function HeroCarousel() {
 
     return () => clearInterval(interval)
   }, [slides.length])
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index)
-  }
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % slides.length)
@@ -73,83 +68,180 @@ export function HeroCarousel() {
   }
 
   return (
-    <div
-      className="relative w-full h-[91vh] overflow-hidden"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
-      {/* Slides */}
-      {slides.map((slide, index) => (
+    <>
+      <section className="relative overflow-hidden bg-[#1a3060] md:hidden">
         <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? 'opacity-100' : 'opacity-0'
-          }`}
-        >
-          <div className="relative w-full h-full">
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(circle at 90% 8%, rgba(61,200,212,0.25), transparent 45%)',
+          }}
+        />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            background:
+              'repeating-linear-gradient(0deg, #fff, #fff 1px, transparent 1px, transparent 32px)',
+          }}
+        />
+
+        <div className="relative z-10 flex flex-col gap-[14px] px-[22px] pb-6 pt-5">
+          <div className="inline-flex items-center gap-1.5 rounded-[20px] border border-[rgba(61,200,212,0.45)] bg-[rgba(61,200,212,0.18)] px-3.5 py-1">
+            <span className="h-[7px] w-[7px] rounded-full bg-[#3dc8d4]" />
+            <span className="text-[12px] font-medium tracking-[0.05em] text-[#a8eef2]">
+              REFERÊNCIA NO PARANÁ
+            </span>
+          </div>
+
+          <div className="flex w-full items-center justify-center">
             <Image
-              src={slide.image}
-              alt={slide.title}
-              fill
-              className="hidden md:block object-cover"
-              priority={index === 0}
-              quality={100}
+              src={slides[currentSlide].imageMobile}
+              alt="Cama hospitalar Levita"
+              width={340}
+              height={240}
+              priority
+              className="h-auto w-full max-h-[240px] object-contain"
               sizes="100vw"
               unoptimized
-              style={{ boxShadow: 'none', imageRendering: 'auto' }}
             />
-            <Image
-              src={slide.mobileImage || slide.image}
-              alt={slide.title}
-              fill
-              className="md:hidden object-cover"
-              priority={index === 0}
-              quality={100}
-              sizes="100vw"
-              unoptimized
-              style={{ boxShadow: 'none', imageRendering: 'auto' }}
-            />
-            {/* Overlay gradiente tecnológico */}
-          {/* <div className="absolute inset-0 bg-gradient-to-r ..."></div> */}
-          {/* <div className="absolute inset-0 bg-[#67CBDD]/15"></div> */}
-            
-            {/* Container de texto no canto inferior direito - menor */}
-            <div className="absolute top-20 md:top-auto md:bottom-32 right-4 md:right-8 z-20 max-w-[calc(100%-2rem)] md:max-w-md">
-              <div className="p-0">
-                <h2 className="text-base md:text-xl lg:text-2xl font-bold text-white mb-2 leading-tight">
-                  Muito mais recursos para as equipes de cuidado e para a segurança do paciente
-                </h2>
-                {slide.text && (
-                  <p className="text-white text-sm md:text-base leading-relaxed mb-3">
-                    {slide.text}
-                  </p>
-                )}
-                <Button asChild size="sm" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white border-2 border-white/30 shadow-lg font-semibold text-xs md:text-sm">
-                  <Link href={slide.buttonLink}>{slide.buttonText}</Link>
-                </Button>
+          </div>
+
+          <h1 className="m-0 text-[26px] font-normal leading-[1.2] text-white">
+            Segurança e <span className="text-[#3dc8d4]">conforto</span> em cada atendimento
+          </h1>
+          <p className="m-0 text-[14px] leading-[1.55] text-[rgba(255,255,255,0.65)]">
+            Equipamentos hospitalares com qualidade certificada, desenvolvidos para proteger
+            pacientes e facilitar o trabalho das equipes de saúde.
+          </p>
+
+          <div className="flex flex-wrap gap-1.5">
+            {['✓ ISO certificado', '✓ +40 anos no mercado', '✓ Entrega em todo o Brasil'].map((pill) => (
+              <span
+                key={pill}
+                className="rounded-[20px] border border-[rgba(255,255,255,0.15)] bg-[rgba(255,255,255,0.07)] px-2.5 py-[3px] text-[11px] text-[rgba(255,255,255,0.6)]"
+              >
+                {pill}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/produtos"
+              className="flex-1 rounded-xl bg-[#3dc8d4] px-4 py-[14px] text-center text-[15px] font-bold text-[#0a2a40]"
+            >
+              Ver Produtos →
+            </Link>
+            <Link
+              href="/contato"
+              className="whitespace-nowrap rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.08)] px-4 py-[14px] text-[15px] text-white"
+            >
+              Falar com vendas
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section
+        className="relative hidden min-h-[760px] overflow-hidden bg-[#1a3060] px-10 md:flex md:items-center"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        <div
+          className="pointer-events-none absolute h-[500px] w-[500px]"
+          style={{
+            top: '-80px',
+            right: '200px',
+            background: 'radial-gradient(circle, rgba(61,200,212,0.2), transparent 65%)',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute h-[300px] w-[300px]"
+          style={{
+            bottom: '-60px',
+            left: '60px',
+            background: 'radial-gradient(circle, rgba(61,200,212,0.1), transparent 70%)',
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.035]"
+          style={{
+            background:
+              'repeating-linear-gradient(0deg, #fff, #fff 1px, transparent 1px, transparent 32px)',
+          }}
+        />
+
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentSlide ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <div className="relative z-10 mx-auto flex min-h-[760px] w-full max-w-[1280px] items-center">
+              <div className="z-[2] flex-1 max-w-[520px] pr-10">
+                <div className="mb-[18px] inline-flex items-center gap-[7px] rounded-[20px] border border-[rgba(61,200,212,0.4)] bg-[rgba(61,200,212,0.15)] px-4 py-[5px]">
+                  <span className="h-[7px] w-[7px] rounded-full bg-[#3dc8d4]" />
+                  <span className="text-[12px] font-medium tracking-[0.06em] text-[#a8eef2]">
+                    REFERÊNCIA NO PARANÁ · +40 ANOS DE MERCADO
+                  </span>
+                </div>
+                <h1 className="mb-6 text-[56px] font-normal leading-[1.16] text-white">
+                  Segurança e <span className="text-[#3dc8d4]">conforto</span> em cada atendimento
+                </h1>
+                <p className="mb-9 max-w-[500px] text-[19px] leading-[1.8] text-[rgba(255,255,255,0.65)]">
+                  Equipamentos hospitalares com qualidade certificada, desenvolvidos para proteger
+                  pacientes e facilitar o trabalho das equipes de saúde em todo o Brasil.
+                </p>
+                <div className="mb-9 flex flex-wrap gap-2.5">
+                  {[
+                    '✓ ISO certificado',
+                    '✓ +350 cidades atendidas',
+                    '✓ +26 estados',
+                    '✓ Entrega em todo o Brasil',
+                  ].map((pill) => (
+                    <span
+                      key={pill}
+                      className="rounded-[20px] border border-[rgba(255,255,255,0.14)] bg-[rgba(255,255,255,0.07)] px-4 py-[7px] text-[13px] text-[rgba(255,255,255,0.6)]"
+                    >
+                      {pill}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/produtos"
+                    className="rounded-[12px] bg-[#3dc8d4] px-9 py-4 text-[17px] font-bold text-[#0a2a40]"
+                  >
+                    Ver Produtos →
+                  </Link>
+                  <Link
+                    href="/contato"
+                    className="rounded-[12px] border border-[rgba(255,255,255,0.2)] bg-[rgba(255,255,255,0.08)] px-7 py-4 text-[16px] text-white"
+                  >
+                    Falar com vendas
+                  </Link>
+                </div>
+              </div>
+
+              <div className="z-[2] flex w-[620px] flex-shrink-0 translate-x-[150px] items-end justify-center self-stretch">
+                <Image
+                  src={slide.imageDesktop}
+                  alt={slide.title}
+                  width={620}
+                  height={700}
+                  priority={index === 0}
+                  className="h-full max-h-[700px] w-full -translate-y-8 object-contain object-bottom mix-blend-screen"
+                  sizes="(min-width: 768px) 620px, 100vw"
+                  unoptimized
+                />
               </div>
             </div>
           </div>
-        </div>
-      ))}
-
-      {/* Indicadores de slide */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => goToSlide(index)}
-            className={`h-2 rounded-full transition-all ${
-              index === currentSlide
-                ? 'w-8 bg-white'
-                : 'w-2 bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Ir para slide ${index + 1}`}
-          />
         ))}
-      </div>
-    </div>
+      </section>
+    </>
   )
 }
 

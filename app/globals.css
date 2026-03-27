@@ -10,13 +10,13 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 189 60% 64%; /* #67CBDD */
+    --primary: 189 60% 64%;
     --primary-foreground: 0 0% 100%;
     --secondary: 217 100% 14%;
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 189 60% 64%; /* #67CBDD */
+    --accent: 189 60% 64%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -58,10 +58,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-dm-sans), sans-serif;
+  }
+  h1 {
+    font-family: var(--font-dm-serif), serif;
   }
 }
 
-/* Scrollbar customizado para container de especificações */
 .specs-scroll-container::-webkit-scrollbar {
   width: 12px;
 }
@@ -72,18 +75,15 @@
 }
 
 .specs-scroll-container::-webkit-scrollbar-thumb {
-  background: #67CBDD;
+  background: #67cbdd;
   border-radius: 10px;
 }
 
 .specs-scroll-container::-webkit-scrollbar-thumb:hover {
-  background: #4FA8B8;
+  background: #4fa8b8;
 }
 
-/* Firefox */
 .specs-scroll-container {
   scrollbar-width: thin;
-  scrollbar-color: #67CBDD #f1f1f1;
+  scrollbar-color: #67cbdd #f1f1f1;
 }
-
-

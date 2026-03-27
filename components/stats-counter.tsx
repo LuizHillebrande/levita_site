@@ -1,111 +1,99 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useState } from 'react'
 
 interface StatItem {
-  value: number
-  prefix?: string
-  suffix: string
+  value: string
   label: string
 }
 
 const stats: StatItem[] = [
-  { value: 350, prefix: '+', suffix: '', label: 'Cidades Atendidas' },
-  { value: 26, prefix: '+', suffix: '', label: 'Estados' },
-  { value: 40, prefix: '+', suffix: ' anos', label: 'Experiência' },
-  { value: 60, prefix: '+', suffix: ' tipos', label: 'Produtos' },
+  { value: '+350', label: 'Cidades Atendidas' },
+  { value: '+26', label: 'Estados' },
+  { value: '+40 anos', label: 'Experiência' },
+  { value: '+60 tipos', label: 'Produtos' },
 ]
 
 export function StatsCounter() {
-  const [counters, setCounters] = useState(stats.map(() => 0))
-  const [hasAnimated, setHasAnimated] = useState(false)
-  const sectionRef = useRef<HTMLDivElement>(null)
+  const [animatedValues, setAnimatedValues] = useState<number[]>(stats.map(() => 0))
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasAnimated) {
-            setHasAnimated(true)
-            animateCounters()
-          }
-        })
-      },
-      { threshold: 0.3 }
-    )
+    const duration = 700
+    const start = performance.now()
+    const targets = stats.map((stat) => Number.parseInt(stat.value.replace(/[^\d]/g, ''), 10))
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1)
+      setAnimatedValues(targets.map((target) => Math.floor(target * progress)))
+      if (progress < 1) {
+        requestAnimationFrame(tick)
       }
     }
-  }, [hasAnimated])
 
-  const animateCounters = () => {
-    stats.forEach((stat, index) => {
-      const duration = 2000 // 2 segundos
-      const steps = 60
-      const increment = stat.value / steps
-      const stepDuration = duration / steps
-
-      let current = 0
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= stat.value) {
-          current = stat.value
-          clearInterval(timer)
-        }
-
-        setCounters((prev) => {
-          const newCounters = [...prev]
-          newCounters[index] = Math.floor(current)
-          return newCounters
-        })
-      }, stepDuration)
-    })
-  }
+    requestAnimationFrame(tick)
+  }, [])
 
   return (
-    <section ref={sectionRef} className="py-20 md:py-24 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
-      {/* Elementos decorativos tecnológicos */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-[#67CBDD] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
-      </div>
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-secondary mb-2">
-            Números que Comprovam
-          </h2>
-          <div className="w-24 h-1 bg-[#67CBDD] mx-auto rounded-full"></div>
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="text-center group"
-            >
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border-2 border-transparent hover:border-[#67CBDD] transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col items-center justify-center min-h-[180px]">
-                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#67CBDD] mb-3 group-hover:scale-110 transition-transform">
-                  {stat.prefix}
-                  {counters[index].toLocaleString('pt-BR')}
-                  {stat.suffix}
+    <>
+      <section className="bg-white p-4 md:hidden">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 gap-[10px] md:grid-cols-4">
+            {stats.map((stat, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center justify-center rounded-[12px] border border-[#e0eef2] bg-[#f4f8fa] px-3 py-5 text-center shadow-none"
+              >
+                <div className="text-[30px] font-bold leading-none text-[#1a3060]">
+                  +
+                  {animatedValues[index]}
+                  {stat.value.includes('anos') ? ' anos' : ''}
+                  {stat.value.includes('tipos') ? ' tipos' : ''}
                 </div>
-                <div className="text-xs md:text-sm text-gray-700 font-semibold">
+                <div className="mt-[6px] text-[11px] font-medium text-[#6b8a99]">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="hidden border-b-2 border-[#f0f4f8] bg-white px-10 py-5 md:block">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-around">
+          {stats.map((stat, index) => (
+            <div key={stat.label} className="flex items-center">
+              <div className="flex min-w-[180px] flex-col items-center gap-1 text-center">
+                <div className="text-[28px] font-bold leading-none text-[#1a3060]">
+                  +
+                  {animatedValues[index]}
+                  {stat.value.includes('anos') ? ' anos' : ''}
+                  {stat.value.includes('tipos') ? ' tipos' : ''}
+                </div>
+                <div className="text-center text-[11px] font-medium uppercase tracking-[0.04em] text-[#6b8a99]">
                   {stat.label}
                 </div>
               </div>
+              {index < stats.length - 1 && <div className="ml-6 h-10 w-px bg-[#e0eef2]" />}
             </div>
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="hidden bg-gradient-to-r from-[#1a3060] to-[#2aaab5] px-10 py-3 md:block">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-center gap-10">
+          {[
+            'Qualidade ISO certificada',
+            'Entrega para todo o Brasil',
+            'Suporte técnico especializado',
+            'Pioneiros em Londrina há +40 anos',
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2 text-[13px] text-[rgba(255,255,255,0.9)]">
+              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[rgba(255,255,255,0.2)] text-[10px] text-white">
+                ✓
+              </span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   )
 }
-

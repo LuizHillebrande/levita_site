@@ -69,9 +69,9 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20 md:h-24">
+    <nav className="sticky top-0 z-50 border-b border-[#f0f2f5] bg-white">
+      <div className="mx-auto max-w-[1280px] px-4 md:px-10">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image
@@ -79,18 +79,18 @@ export function Navbar() {
               alt="Levita Móveis Hospitalares"
               width={200}
               height={84}
-              className="h-16 md:h-24 w-auto"
+              className="h-12 w-auto"
               priority
             />
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center space-x-6 flex-1 justify-center">
+          <div className="hidden flex-1 items-center justify-center space-x-6 lg:flex">
             {menuItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-[#67CBDD] transition-colors font-medium text-base"
+                className="text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
               >
                 {item.label}
               </Link>
@@ -100,7 +100,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
-                className="text-gray-700 hover:text-[#67CBDD] transition-colors font-medium text-base flex items-center space-x-1"
+                className="flex items-center space-x-1 text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
               >
                 <span>Produtos</span>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isProductsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -131,22 +131,26 @@ export function Navbar() {
           </div>
 
           {/* Search Bar Desktop */}
-          <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md ml-4">
+          <div className="ml-4 hidden max-w-md flex-1 items-center space-x-4 md:flex">
             <form onSubmit={handleSearch} className="flex-1 relative">
               <Input
                 type="search"
                 placeholder="Pesquisar produtos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 border-2 border-gray-200 focus:border-[#67CBDD] rounded-lg"
+                className="h-10 w-[200px] rounded-[10px] border border-[#e0eef2] bg-[#f5f8fa] py-2 pl-10 pr-[14px] text-[13px] text-[#8ab0bb] placeholder:text-[#8ab0bb] focus:border-[#3dc8d4]"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             </form>
           </div>
 
           {/* Actions Desktop */}
-          <div className="hidden md:flex items-center space-x-3 ml-4">
-            <Button asChild size="default" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white text-base">
+          <div className="ml-4 hidden items-center space-x-3 md:flex">
+            <Button
+              asChild
+              size="default"
+              className="rounded-[10px] border-none bg-[#3dc8d4] px-[22px] py-[10px] text-[14px] font-bold text-[#0a2a40] hover:bg-[#2aaab5]"
+            >
               <Link href="/contato">Orçamento</Link>
             </Button>
           </div>
