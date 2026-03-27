@@ -3,16 +3,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { ImageCarousel } from './image-carousel'
 
-// Imagens do carrossel - adicione suas imagens aqui
-const images = [
+const defaultImages = [
   '/images/institutional/factory-01.jpg',
   '/images/institutional/factory-02.jpg',
   '/images/institutional/factory-03.jpg',
-  '/images/institutional/team-01.jpg',
 ]
 
 export function QuemSomosSection() {
   const [isVisible, setIsVisible] = useState(false)
+  const [images, setImages] = useState<string[]>(defaultImages)
   const sectionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,6 +35,19 @@ export function QuemSomosSection() {
         observer.unobserve(sectionRef.current)
       }
     }
+  }, [])
+
+  useEffect(() => {
+    fetch('/api/pages/quem-somos-images')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.images) && data.images.length > 0) {
+          setImages(data.images)
+        }
+      })
+      .catch(() => {
+        setImages(defaultImages)
+      })
   }, [])
 
   return (

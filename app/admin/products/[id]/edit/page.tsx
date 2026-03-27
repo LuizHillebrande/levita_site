@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Plus, X, FileText, Upload, Loader2 } from 'lucide-react'
+import { Plus, X, FileText } from 'lucide-react'
 import Image from 'next/image'
 import { OptionalsSection } from '../optionals-section'
+import { ImageUploadCropper } from '@/components/admin/image-upload-cropper'
 
 interface Category {
   id: string
@@ -45,7 +46,6 @@ export default function EditProductPage() {
   
   // Imagens
   const [images, setImages] = useState<Array<{ id?: string; url: string; alt?: string; order: number }>>([])
-  const [uploading, setUploading] = useState(false)
   
   // Especificações simples (padrão)
   const simpleSpecsLabels = [
@@ -254,54 +254,6 @@ export default function EditProductPage() {
     setDocumentation(updated)
   }
 
-  // Upload de imagens
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-    if (!allowedTypes.includes(file.type)) {
-      alert('Tipo de arquivo não permitido. Use JPG, PNG ou WEBP')
-      return
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert('Arquivo muito grande. Tamanho máximo: 10MB')
-      return
-    }
-
-    setUploading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('folder', 'products')
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        throw new Error(error.error || 'Erro ao fazer upload')
-      }
-
-      const data = await res.json()
-      
-      setImages([...images, {
-        url: data.url,
-        alt: file.name,
-        order: images.length,
-      }])
-    } catch (error: any) {
-      alert(error.message || 'Erro ao fazer upload da imagem')
-    } finally {
-      setUploading(false)
-      e.target.value = ''
-    }
-  }
-
   const removeImage = (index: number) => {
     const updated = images.filter((_, i) => i !== index)
     const reordered = updated.map((img, i) => ({ ...img, order: i }))
@@ -502,37 +454,12 @@ export default function EditProductPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#67CBDD] transition-colors">
-              <input
-                type="file"
-                id="image-upload"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={uploading}
-              />
-              <label
-                htmlFor="image-upload"
-                className={`flex flex-col items-center justify-center cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-12 w-12 text-[#67CBDD] animate-spin mb-4" />
-                    <p className="text-gray-600">Fazendo upload...</p>
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-2">
-                      Clique para fazer upload ou arraste uma imagem aqui
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      JPG, PNG ou WEBP (máximo 10MB)
-                    </p>
-                  </>
-                )}
-              </label>
-            </div>
+            <ImageUploadCropper
+              folder="products"
+              onUploaded={({ url, alt }) =>
+                setImages((prev) => [...prev, { url, alt, order: prev.length }])
+              }
+            />
 
             {images.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-6">
