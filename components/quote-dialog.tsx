@@ -15,6 +15,16 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
 
+const DEFAULT_WHATSAPP_E164 = '5543991598585'
+
+type OptionalRow = {
+  id: string
+  name: string
+  description: string | null
+  price: number | null
+  showPrice: boolean
+}
+
 interface QuoteDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -24,7 +34,62 @@ interface QuoteDialogProps {
   productId?: string
 }
 
-export function QuoteDialog({ open, onOpenChange, productName, productSlug, selectedOptionals = [], productId }: QuoteDialogProps) {
+function formatOptionalForWhatsApp(opt: OptionalRow) {
+  const priceInfo =
+    opt.showPrice && opt.price != null
+      ? ` - R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : ' - Sob consulta'
+  let line = `✓ ${opt.name}${priceInfo}`
+  if (opt.description) line += `\n  ${opt.description}`
+  return line
+}
+
+function buildWhatsAppMessage(params: {
+  name: string
+  email: string
+  phone: string
+  message: string
+  productName?: string
+  productSlug?: string
+  optionals: OptionalRow[]
+}) {
+  const baseUrl =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+
+  const lines: string[] = [
+    'Olá! Gostaria de solicitar um orçamento pela Levita.',
+    '',
+    `*Nome:* ${params.name}`,
+    `*E-mail:* ${params.email}`,
+  ]
+  if (params.phone.trim()) {
+    lines.push(`*Telefone:* ${params.phone.trim()}`)
+  }
+  lines.push('')
+  if (params.productName) {
+    lines.push(`*Produto:* ${params.productName}`)
+  }
+  if (params.productSlug) {
+    lines.push(`*Página do produto:* ${baseUrl}/produtos/${params.productSlug}`)
+  }
+  if (params.optionals.length > 0) {
+    lines.push('', '*Monte sua Cama (opcionais selecionados):*')
+    params.optionals.forEach((o) => lines.push(formatOptionalForWhatsApp(o)))
+  }
+  lines.push('', '*Mensagem:*', params.message)
+  return lines.join('\n')
+}
+
+export function QuoteDialog({
+  open,
+  onOpenChange,
+  productName,
+  productSlug,
+  selectedOptionals = [],
+  productId,
+}: QuoteDialogProps) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -48,29 +113,48 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug, sele
           productSlug,
           selectedOptionals,
           productId,
+          channel: 'whatsapp',
         }),
       })
 
       const data = await res.json()
 
-      if (res.ok) {
-        setSuccess(true)
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          message: '',
-        })
-        // Fechar modal após 2 segundos
-        setTimeout(() => {
-          setSuccess(false)
-          onOpenChange(false)
-        }, 2000)
-      } else {
-        alert(data.error || 'Erro ao enviar solicitação de orçamento')
+      if (!res.ok) {
+        alert(data.error || 'Não foi possível registrar o pedido. Tente novamente.')
+        return
       }
-    } catch (error) {
-      alert('Erro ao enviar solicitação de orçamento. Tente novamente.')
+
+      const optionals: OptionalRow[] = Array.isArray(data.optionals) ? data.optionals : []
+
+      const text = buildWhatsAppMessage({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        productName,
+        productSlug,
+        optionals,
+      })
+
+      const phone =
+        process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.replace(/\D/g, '') || DEFAULT_WHATSAPP_E164
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+
+      window.open(url, '_blank', 'noopener,noreferrer')
+
+      setSuccess(true)
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        message: '',
+      })
+      setTimeout(() => {
+        setSuccess(false)
+        onOpenChange(false)
+      }, 2500)
+    } catch {
+      alert('Erro ao continuar para o WhatsApp. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -95,9 +179,9 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug, sele
         <DialogHeader>
           <DialogTitle>Solicitar Orçamento</DialogTitle>
           <DialogDescription>
-            {productName 
-              ? `Preencha o formulário abaixo para solicitar um orçamento do produto: ${productName}`
-              : 'Preencha o formulário abaixo para solicitar um orçamento. Entraremos em contato em breve.'}
+            {productName
+              ? `Preencha seus dados. Você será direcionado ao WhatsApp com a mensagem pronta para o produto: ${productName}`
+              : 'Preencha seus dados. Você será direcionado ao WhatsApp com a mensagem pronta.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -118,11 +202,9 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug, sele
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Solicitação enviada com sucesso!
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Abrindo o WhatsApp…</h3>
             <p className="text-gray-600">
-              Entraremos em contato em breve.
+              Se não abrir automaticamente, verifique o bloqueio de pop-ups do navegador.
             </p>
           </div>
         ) : (
@@ -178,12 +260,7 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug, sele
             </div>
 
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-              >
+              <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
                 Cancelar
               </Button>
               <Button
@@ -194,10 +271,10 @@ export function QuoteDialog({ open, onOpenChange, productName, productSlug, sele
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enviando...
+                    Preparando…
                   </>
                 ) : (
-                  'Enviar Solicitação'
+                  'Continuar no WhatsApp'
                 )}
               </Button>
             </DialogFooter>

@@ -11,16 +11,27 @@ interface ProductOptional {
   description: string | null
   price: number | null
   showPrice: boolean
+  imageUrl?: string | null
+}
+
+export interface SelectedOptionalSummary {
+  id: string
+  name: string
+  description: string | null
+  price: number | null
+  showPrice: boolean
 }
 
 interface BuildYourBedProps {
   productId: string
-  onSelectionChange: (selectedOptionals: string[]) => void
+  onSelectionChange: (selectedOptionals: string[], selectedOptionalsSummary: SelectedOptionalSummary[]) => void
+  onImageOverrideChange?: (imageUrl: string | null) => void
 }
 
-export function BuildYourBed({ productId, onSelectionChange }: BuildYourBedProps) {
+export function BuildYourBed({ productId, onSelectionChange, onImageOverrideChange }: BuildYourBedProps) {
   const [optionals, setOptionals] = useState<ProductOptional[]>([])
   const [selectedOptionals, setSelectedOptionals] = useState<string[]>([])
+  const [selectionOrder, setSelectionOrder] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -37,12 +48,38 @@ export function BuildYourBed({ productId, onSelectionChange }: BuildYourBedProps
   }, [productId])
 
   const handleToggle = (optionalId: string) => {
-    const newSelection = selectedOptionals.includes(optionalId)
+    const isSelected = selectedOptionals.includes(optionalId)
+    const newSelection = isSelected
       ? selectedOptionals.filter((id) => id !== optionalId)
       : [...selectedOptionals, optionalId]
-    
+
+    const newOrder = isSelected
+      ? selectionOrder.filter((id) => id !== optionalId)
+      : [...selectionOrder, optionalId]
+
     setSelectedOptionals(newSelection)
-    onSelectionChange(newSelection)
+    setSelectionOrder(newOrder)
+    const summary: SelectedOptionalSummary[] = newSelection
+      .map((id) => optionals.find((o) => o.id === id))
+      .filter((o): o is ProductOptional => !!o)
+      .map((o) => ({
+        id: o.id,
+        name: o.name,
+        description: o.description,
+        price: o.price,
+        showPrice: o.showPrice,
+      }))
+
+    onSelectionChange(newSelection, summary)
+
+    if (onImageOverrideChange) {
+      const lastWithImage = [...newOrder]
+        .reverse()
+        .map((id) => optionals.find((o) => o.id === id))
+        .find((opt) => opt?.imageUrl)
+
+      onImageOverrideChange(lastWithImage?.imageUrl ?? null)
+    }
   }
 
   if (loading) {
@@ -83,12 +120,12 @@ export function BuildYourBed({ productId, onSelectionChange }: BuildYourBedProps
                   className="text-base font-semibold text-secondary cursor-pointer flex items-center gap-2"
                 >
                   {optional.name}
-                  {optional.showPrice && optional.price && (
+                  {optional.showPrice && optional.price != null && (
                     <span className="text-[#67CBDD] font-bold">
                       R$ {optional.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   )}
-                  {optional.showPrice && !optional.price && (
+                  {optional.showPrice && optional.price == null && (
                     <span className="text-gray-500 text-sm">(Sob consulta)</span>
                   )}
                   {!optional.showPrice && (

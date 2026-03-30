@@ -75,8 +75,8 @@ export default function ModelViewer() {
   const [withMattress, setWithMattress] = useState(false)
   const controlsRef = useRef<any>(null)
   const modelPath = withMattress
-    ? '/images/models/Meshy_AI_Adjustable_hospital_b_0327123525_generate.glb'
-    : '/images/models/Meshy_AI_Modern_Adjustable_Hos_0327120503_generate.glb'
+    ? '/images/models/Meshy_AI_Adjustable_hospital_b_0330132440_texture.glb'
+    : '/images/models/Meshy_AI_Modern_Adjustable_Hos_0330131427_texture.glb'
 
   const setTopView = () => {
     if (!controlsRef.current) return
@@ -270,5 +270,5 @@ export default function ModelViewer() {
   )
 }
 
-useGLTF.preload('/images/models/Meshy_AI_Modern_Adjustable_Hos_0327120503_generate.glb')
-useGLTF.preload('/images/models/Meshy_AI_Adjustable_hospital_b_0327123525_generate.glb')
+useGLTF.preload('/images/models/Meshy_AI_Modern_Adjustable_Hos_0330131427_texture.glb')
+useGLTF.preload('/images/models/Meshy_AI_Adjustable_hospital_b_0330132440_texture.glb')

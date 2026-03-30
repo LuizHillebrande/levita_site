@@ -9,8 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Search, ArrowLeft } from 'lucide-react'
-import { QuoteDialog } from '@/components/quote-dialog'
-import { BuildYourBed } from '@/components/build-your-bed'
+import { BuildYourBed, SelectedOptionalSummary } from '@/components/build-your-bed'
 import Link from 'next/link'
 
 interface Product {
@@ -43,7 +42,6 @@ interface Category {
 
 export default function ProdutoPage() {
   const params = useParams()
-  const router = useRouter()
   const slug = params.slug as string
   const [product, setProduct] = useState<Product | null>(null)
   const [category, setCategory] = useState<Category | null>(null)
@@ -51,8 +49,9 @@ export default function ProdutoPage() {
   const [loading, setLoading] = useState(true)
   const [isCategory, setIsCategory] = useState<boolean | null>(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
+  const [imageOverrideUrl, setImageOverrideUrl] = useState<string | null>(null)
   const [selectedOptionals, setSelectedOptionals] = useState<string[]>([])
+  const [selectedOptionalsSummary, setSelectedOptionalsSummary] = useState<SelectedOptionalSummary[]>([])
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<string>('newest')
 
@@ -82,6 +81,7 @@ export default function ProdutoPage() {
       } else if (foundProduct) {
         setIsCategory(false)
         setProduct(foundProduct)
+        setImageOverrideUrl(null)
         setLoading(false)
       } else {
         setIsCategory(false)
@@ -241,19 +241,50 @@ export default function ProdutoPage() {
     ? product.images[selectedImageIndex] || product.images[0]
     : null
 
+  const displayedMainImage = imageOverrideUrl
+    ? { url: imageOverrideUrl, alt: `${product.name} (com opcional)` }
+    : mainImage
+
   const technicalSpecs = product.technicalSpecs || {}
+
+  const handleOpenWhatsApp = () => {
+    const phone = (process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '5543991598585').replace(/\D/g, '')
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000')
+
+    const lines: string[] = [
+      'Olá! Gostaria de solicitar um orçamento.',
+      '',
+      `*Produto:* ${product.name}`,
+      `*Link:* ${baseUrl}/produtos/${product.slug}`,
+    ]
+
+    if (selectedOptionalsSummary.length > 0) {
+      lines.push('', '*Monte sua Cama (opcionais selecionados):*')
+      selectedOptionalsSummary.forEach((opt) => {
+        const priceInfo =
+          opt.showPrice && opt.price != null
+            ? ` - R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            : ' - Sob consulta'
+        lines.push(`✓ ${opt.name}${priceInfo}`)
+        if (opt.description) lines.push(`  ${opt.description}`)
+      })
+    }
+
+    const text = encodeURIComponent(lines.join('\n'))
+    window.open(`https://wa.me/${phone}?text=${text}`, '_blank', 'noopener,noreferrer')
+  }
 
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="grid md:grid-cols-2 gap-12">
         {/* Galeria de Imagens */}
         <div>
-          {mainImage ? (
+          {displayedMainImage ? (
             <>
               <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden relative">
                 <Image
-                  src={mainImage.url}
-                  alt={mainImage.alt || product.name}
+                  src={displayedMainImage.url}
+                  alt={displayedMainImage.alt || product.name}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -265,12 +296,15 @@ export default function ProdutoPage() {
                   {product.images.map((image, index) => (
                     <div
                       key={image.id}
-                      className={`aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                      className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
                         index === selectedImageIndex
                           ? 'border-[#67CBDD] opacity-100'
                           : 'border-transparent opacity-70 hover:opacity-100'
                       }`}
-                      onClick={() => setSelectedImageIndex(index)}
+                      onClick={() => {
+                        setSelectedImageIndex(index)
+                        // Se existir override por opcional, mantemos o comportamento "opcional manda" (MVP).
+                      }}
                     >
                       <Image
                         src={image.url}
@@ -359,14 +393,18 @@ export default function ProdutoPage() {
           {product && !isCategory && (
             <BuildYourBed
               productId={product.id}
-              onSelectionChange={setSelectedOptionals}
+              onSelectionChange={(ids, summary) => {
+                setSelectedOptionals(ids)
+                setSelectedOptionalsSummary(summary)
+              }}
+              onImageOverrideChange={setImageOverrideUrl}
             />
           )}
 
           <Button 
             size="lg" 
             className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white mt-6"
-            onClick={() => setQuoteDialogOpen(true)}
+            onClick={handleOpenWhatsApp}
           >
             Solicitar Orçamento
           </Button>
@@ -385,15 +423,6 @@ export default function ProdutoPage() {
         </div>
       )}
 
-      {/* Dialog de Orçamento */}
-      <QuoteDialog
-        open={quoteDialogOpen}
-        onOpenChange={setQuoteDialogOpen}
-        productName={product.name}
-        productSlug={product.slug}
-        selectedOptionals={selectedOptionals}
-        productId={product.id}
-      />
     </div>
   )
 }

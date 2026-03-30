@@ -38,8 +38,8 @@ export default function Home() {
         </div>
       </section>
 
-      <QuemSomosSection />
       <CategoriesSection />
+      <QuemSomosSection />
       <FeaturedProducts />
       <CertificationsSection />
 

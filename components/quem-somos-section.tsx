@@ -3,11 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { ImageCarousel } from './image-carousel'
 
-const defaultImages = [
-  '/images/institutional/factory-01.jpg',
-  '/images/institutional/factory-02.jpg',
-  '/images/institutional/factory-03.jpg',
-]
+/** Vazio até existirem arquivos reais em /public ou URLs salvas no admin (evita erro do otimizador next/image). */
+const defaultImages: string[] = []
 
 export function QuemSomosSection() {
   const [isVisible, setIsVisible] = useState(false)
@@ -45,9 +42,7 @@ export function QuemSomosSection() {
           setImages(data.images)
         }
       })
-      .catch(() => {
-        setImages(defaultImages)
-      })
+      .catch(() => setImages(defaultImages))
   }, [])
 
   return (

@@ -18,7 +18,7 @@ export async function PUT(
     }
 
     const data = await request.json()
-    const { name, description, price, showPrice, active, order } = data
+    const { name, description, price, showPrice, active, order, imageUrl } = data
 
     const updateData: any = {}
     if (name !== undefined) updateData.name = name
@@ -27,6 +27,7 @@ export async function PUT(
     if (showPrice !== undefined) updateData.showPrice = showPrice
     if (active !== undefined) updateData.active = active
     if (order !== undefined) updateData.order = order
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl
 
     const optional = await prisma.productOptional.update({
       where: { id: params.optionalId },

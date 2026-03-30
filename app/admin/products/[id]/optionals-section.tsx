@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Plus, X, Edit, Trash2 } from 'lucide-react'
+import Image from 'next/image'
+import { ImageUploadCropper } from '@/components/admin/image-upload-cropper'
 
 interface ProductOptional {
   id: string
@@ -16,6 +18,7 @@ interface ProductOptional {
   showPrice: boolean
   active: boolean
   order: number
+  imageUrl?: string | null
 }
 
 interface OptionalsSectionProps {
@@ -33,6 +36,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
     showPrice: false,
     active: true,
     order: 0,
+    imageUrl: '',
   })
 
   useEffect(() => {
@@ -41,7 +45,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
 
   const fetchOptionals = async () => {
     try {
-      const res = await fetch(`/api/products/${productId}/optionals`)
+      const res = await fetch(`/api/products/${productId}/optionals?includeInactive=1`)
       const data = await res.json()
       setOptionals(data.optionals || [])
     } catch (error) {
@@ -51,36 +55,48 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  const handleSubmit = async () => {
     try {
+      if (!formData.name.trim()) {
+        alert('Nome do opcional é obrigatório')
+        return
+      }
+
       const payload = {
         ...formData,
         price: formData.price ? parseFloat(formData.price) : null,
         order: parseInt(formData.order.toString()) || 0,
+        imageUrl: formData.imageUrl?.trim() ? formData.imageUrl.trim() : null,
       }
 
       if (editingId) {
         // Atualizar
-        await fetch(`/api/products/optionals/${editingId}`, {
+        const res = await fetch(`/api/products/optionals/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || 'Erro ao atualizar opcional')
+        }
       } else {
         // Criar
-        await fetch(`/api/products/${productId}/optionals`, {
+        const res = await fetch(`/api/products/${productId}/optionals`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error || 'Erro ao criar opcional')
+        }
       }
 
       resetForm()
       fetchOptionals()
-    } catch (error) {
-      alert('Erro ao salvar opcional')
+    } catch (error: any) {
+      alert(error.message || 'Erro ao salvar opcional')
     }
   }
 
@@ -89,10 +105,11 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
     setFormData({
       name: optional.name,
       description: optional.description || '',
-      price: optional.price ? String(optional.price) : '',
+      price: optional.price != null ? String(optional.price) : '',
       showPrice: optional.showPrice,
       active: optional.active,
       order: optional.order,
+      imageUrl: optional.imageUrl || '',
     })
   }
 
@@ -100,10 +117,14 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
     if (!confirm('Tem certeza que deseja excluir este opcional?')) return
 
     try {
-      await fetch(`/api/products/optionals/${id}`, { method: 'DELETE' })
+      const res = await fetch(`/api/products/optionals/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Erro ao excluir opcional')
+      }
       fetchOptionals()
-    } catch (error) {
-      alert('Erro ao excluir opcional')
+    } catch (error: any) {
+      alert(error.message || 'Erro ao excluir opcional')
     }
   }
 
@@ -116,6 +137,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
       showPrice: false,
       active: true,
       order: 0,
+      imageUrl: '',
     })
   }
 
@@ -133,13 +155,12 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Formulário */}
-        <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-gray-50 rounded-lg">
+        <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="optional-name">Nome do Opcional *</Label>
               <Input
                 id="optional-name"
-                required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ex: Grades laterais em alumínio"
@@ -165,6 +186,39 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Descrição do opcional"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="optional-imageUrl">Imagem ao selecionar este opcional (opcional)</Label>
+            <div className="grid md:grid-cols-2 gap-4 items-start">
+              <div className="space-y-2">
+                <Input
+                  id="optional-imageUrl"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  placeholder="Cole uma URL ou faça upload abaixo"
+                />
+                <ImageUploadCropper
+                  folder="optionals"
+                  onUploaded={({ url }) => setFormData((prev) => ({ ...prev, imageUrl: url }))}
+                />
+              </div>
+              <div className="rounded-lg border bg-white p-3">
+                {formData.imageUrl?.trim() ? (
+                  <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
+                    <Image
+                      src={formData.imageUrl}
+                      alt="Preview do opcional"
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 240px"
+                    />
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">Sem imagem definida.</p>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
@@ -202,7 +256,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit" className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+            <Button type="button" onClick={handleSubmit} className="bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
               {editingId ? 'Atualizar' : 'Adicionar'} Opcional
             </Button>
             {editingId && (
@@ -211,7 +265,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
               </Button>
             )}
           </div>
-        </form>
+        </div>
 
         {/* Lista de opcionais */}
         {optionals.length > 0 ? (
@@ -225,7 +279,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold">{optional.name}</span>
-                    {optional.showPrice && optional.price && (
+                    {optional.showPrice && optional.price != null && (
                       <span className="text-[#67CBDD] font-bold">
                         R$ {optional.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
@@ -239,6 +293,11 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
                   </div>
                   {optional.description && (
                     <p className="text-sm text-gray-600 mt-1">{optional.description}</p>
+                  )}
+                  {optional.imageUrl && (
+                    <div className="mt-2">
+                      <span className="text-xs text-gray-500">Imagem vinculada ao opcional</span>
+                    </div>
                   )}
                 </div>
                 <div className="flex gap-2">
