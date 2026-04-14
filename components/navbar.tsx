@@ -56,7 +56,7 @@ export function Navbar() {
     { href: '/', label: 'Home' },
     { href: '/levita-3d', label: 'Levita 3D' },
     { href: '/#quem-somos', label: 'Quem Somos' },
-    { href: '/produtos', label: 'Monte sua Cama' },
+    { href: '/produtos', label: 'Opcionais' },
     { href: '/contato', label: 'Contato' },
   ]
 

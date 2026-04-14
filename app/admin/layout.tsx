@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   X,
+  MessageSquareQuote,
 } from 'lucide-react'
 
 export default function AdminLayout({
@@ -55,6 +56,7 @@ export default function AdminLayout({
   const menuItems = [
     { href: '/admin/products', label: 'Produtos', icon: Package },
     { href: '/admin/categories', label: 'Categorias', icon: FolderTree },
+    { href: '/admin/reviews', label: 'Avaliações', icon: MessageSquareQuote },
     { href: '/admin/certifications', label: 'Certificações', icon: Award },
     { href: '/admin/pages', label: 'Páginas', icon: FileText },
   ]

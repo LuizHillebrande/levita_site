@@ -48,6 +48,7 @@ model Product {
   category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images           ProductImage[]
   optionals        ProductOptional[]
+  reviews          ProductReview[]
   specifications   String? // Para armazenar ficha técnica como JSON (String no SQLite)
   documentation    String? // URLs de PDFs/manuais/documentação (JSON array)
   technicalSpecs   String? // Especificações técnicas detalhadas (JSON)
@@ -99,6 +100,23 @@ model Certification {
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum ProductReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+model ProductReview {
+  id         String              @id @default(cuid())
+  productId  String
+  product    Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String
+  authorName String?
+  status     ProductReviewStatus @default(APPROVED)
+  createdAt  DateTime            @default(now())
 }
 
 model ProductOptional {

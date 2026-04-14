@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Search, ArrowLeft } from 'lucide-react'
+import { Loader2, Search, ArrowLeft, Star, StarHalf } from 'lucide-react'
 import { BuildYourBed, SelectedOptionalSummary } from '@/components/build-your-bed'
 import Link from 'next/link'
+import { formatProductQuoteWhatsAppMessage, openWhatsAppWithText, getPublicSiteBaseUrl } from '@/lib/whatsapp'
+import { ProductReviewsSection } from '@/components/product-reviews-section'
 
 interface Product {
   id: string
@@ -54,6 +56,8 @@ export default function ProdutoPage() {
   const [selectedOptionalsSummary, setSelectedOptionalsSummary] = useState<SelectedOptionalSummary[]>([])
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<string>('newest')
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
+  const [ratingSummary, setRatingSummary] = useState<{ count: number; avg: number } | null>(null)
 
   useEffect(() => {
     // Verificar se é categoria ou produto
@@ -92,6 +96,36 @@ export default function ProdutoPage() {
       setLoading(false)
     })
   }, [slug])
+
+  useEffect(() => {
+    if (!product?.id) {
+      setRelatedProducts([])
+      return
+    }
+    fetch(`/api/products/${product.id}/related`)
+      .then((res) => res.json())
+      .then((data) => setRelatedProducts(Array.isArray(data.products) ? data.products : []))
+      .catch(() => setRelatedProducts([]))
+  }, [product?.id])
+
+  useEffect(() => {
+    if (!product?.id) {
+      setRatingSummary(null)
+      return
+    }
+    fetch(`/api/products/${product.id}/reviews`)
+      .then((res) => res.json())
+      .then((data) => {
+        const reviews = Array.isArray(data.reviews) ? data.reviews : []
+        if (reviews.length === 0) {
+          setRatingSummary(null)
+          return
+        }
+        const sum = reviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0)
+        setRatingSummary({ count: reviews.length, avg: sum / reviews.length })
+      })
+      .catch(() => setRatingSummary(null))
+  }, [product?.id])
 
   // Se for categoria, renderizar página de categoria
   if (isCategory === true && category) {
@@ -248,34 +282,21 @@ export default function ProdutoPage() {
   const technicalSpecs = product.technicalSpecs || {}
 
   const handleOpenWhatsApp = () => {
-    const phone = (process.env.NEXT_PUBLIC_WHATSAPP_PHONE || '5543991598585').replace(/\D/g, '')
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000')
-
-    const lines: string[] = [
-      'Olá! Gostaria de solicitar um orçamento.',
-      '',
-      `*Produto:* ${product.name}`,
-      `*Link:* ${baseUrl}/produtos/${product.slug}`,
-    ]
-
-    if (selectedOptionalsSummary.length > 0) {
-      lines.push('', '*Monte sua Cama (opcionais selecionados):*')
-      selectedOptionalsSummary.forEach((opt) => {
-        const priceInfo =
-          opt.showPrice && opt.price != null
-            ? ` - R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-            : ' - Sob consulta'
-        lines.push(`✓ ${opt.name}${priceInfo}`)
-        if (opt.description) lines.push(`  ${opt.description}`)
-      })
-    }
-
-    const text = encodeURIComponent(lines.join('\n'))
-    window.open(`https://wa.me/${phone}?text=${text}`, '_blank', 'noopener,noreferrer')
+    const text = formatProductQuoteWhatsAppMessage({
+      productName: product.name,
+      productSlug: product.slug,
+      baseUrl: getPublicSiteBaseUrl(),
+      optionals: selectedOptionalsSummary.map((o) => ({
+        name: o.name,
+        showPrice: o.showPrice,
+        price: o.price,
+      })),
+    })
+    openWhatsAppWithText(text)
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 pb-20">
       <div className="grid md:grid-cols-2 gap-12">
         {/* Galeria de Imagens */}
         <div>
@@ -341,6 +362,58 @@ export default function ProdutoPage() {
               <p className="text-3xl font-bold text-[#67CBDD]">
                 R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
+            </div>
+          )}
+
+          {ratingSummary && ratingSummary.count > 0 && (
+            <div
+              className="mb-6 inline-flex flex-wrap items-center gap-3 rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 to-white px-4 py-3 shadow-sm"
+              role="img"
+              aria-label={`Média ${ratingSummary.avg.toFixed(1)} de 5 estrelas, ${ratingSummary.count} avaliações`}
+            >
+              <div className="flex items-center gap-0.5" aria-hidden>
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const { avg } = ratingSummary
+                  if (avg >= n) {
+                    return (
+                      <Star
+                        key={n}
+                        className="h-6 w-6 shrink-0 fill-amber-400 text-amber-400"
+                        strokeWidth={1.5}
+                      />
+                    )
+                  }
+                  if (avg >= n - 0.5) {
+                    return (
+                      <StarHalf
+                        key={n}
+                        className="h-6 w-6 shrink-0 fill-amber-400 text-amber-400"
+                        strokeWidth={1.5}
+                      />
+                    )
+                  }
+                  return (
+                    <Star
+                      key={n}
+                      className="h-6 w-6 shrink-0 text-gray-300"
+                      strokeWidth={1.5}
+                    />
+                  )
+                })}
+              </div>
+              <div className="flex flex-col gap-0.5 text-sm leading-tight">
+                <span className="font-semibold text-secondary tabular-nums">
+                  {ratingSummary.avg.toLocaleString('pt-BR', {
+                    minimumFractionDigits: ratingSummary.avg % 1 === 0 ? 0 : 1,
+                    maximumFractionDigits: 1,
+                  })}{' '}
+                  de 5
+                </span>
+                <span className="text-gray-600">
+                  {ratingSummary.count}{' '}
+                  {ratingSummary.count === 1 ? 'avaliação' : 'avaliações'}
+                </span>
+              </div>
             </div>
           )}
 
@@ -413,16 +486,74 @@ export default function ProdutoPage() {
 
       {/* Descrição Detalhada */}
       {product.description && (
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-secondary mb-4">Descrição Detalhada</h2>
-          <div className="prose max-w-none">
-            <p className="text-gray-700 whitespace-pre-line">
-              {product.description}
-            </p>
-          </div>
-        </div>
+        <section className="mt-14 max-w-4xl">
+          <Card className="overflow-hidden border-gray-200 shadow-sm">
+            <div className="h-1 w-full bg-gradient-to-r from-[#67CBDD] to-[#4FA8B8]" aria-hidden />
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl text-secondary">Descrição detalhada</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="rounded-lg bg-gray-50/80 border border-gray-100 px-5 py-6 md:px-7 md:py-7">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px] md:text-base">
+                  {product.description}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       )}
 
+      {relatedProducts.length > 0 && (
+        <section className="mt-16 border-t border-gray-200 pt-12">
+          <h2 className="text-2xl font-bold text-secondary mb-8">Produtos relacionados</h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {relatedProducts.map((p) => {
+              const img = p.images?.[0]
+              return (
+                <Card key={p.id} className="overflow-hidden flex flex-col hover:shadow-lg transition-shadow">
+                  <Link href={`/produtos/${p.slug}`} className="block">
+                    <div className="aspect-video bg-gray-100 relative">
+                      {img ? (
+                        <Image
+                          src={img.url}
+                          alt={img.alt || p.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 25vw"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><span className="text-4xl">🛏️</span></div>
+                      )}
+                    </div>
+                  </Link>
+                  <CardHeader className="flex-1 pb-2">
+                    <CardTitle className="text-lg line-clamp-2">{p.name}</CardTitle>
+                    {p.shortDescription && (
+                      <CardDescription className="line-clamp-2">{p.shortDescription}</CardDescription>
+                    )}
+                    {p.price != null && (
+                      <p className="text-lg font-bold text-[#67CBDD] mt-2">
+                        R${' '}
+                        {p.price.toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <Button asChild className="w-full bg-[#67CBDD] hover:bg-[#4FA8B8] text-white">
+                      <Link href={`/produtos/${p.slug}`}>Ver produto</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      <ProductReviewsSection productId={product.id} productName={product.name} />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Phone, Mail, Clock, MapPin } from 'lucide-react'
 import { useState } from 'react'
+import { openWhatsAppWithText } from '@/lib/whatsapp'
 
 export default function ContatoPage() {
   const [loading, setLoading] = useState(false)
@@ -47,18 +48,17 @@ export default function ContatoPage() {
       const lines = [
         'Olá! Vim pelo site da Levita e gostaria de solicitar um orçamento.',
         '',
-        `*Nome:* ${formData.name}`,
-        `*E-mail:* ${formData.email}`,
-        `*Telefone:* ${formData.phone || 'Não informado'}`,
-        `*Tipo de comprador:* ${buyerLabelMap[formData.buyerType] || 'Não informado'}`,
-        `*Assunto:* ${formData.subject || 'Não informado'}`,
+        `Nome: ${formData.name}`,
+        `E-mail: ${formData.email}`,
+        `Telefone: ${formData.phone || 'Não informado'}`,
+        `Tipo de comprador: ${buyerLabelMap[formData.buyerType] || 'Não informado'}`,
+        `Assunto: ${formData.subject || 'Não informado'}`,
         '',
-        '*Mensagem:*',
+        'Mensagem:',
         formData.message,
       ]
 
-      const text = encodeURIComponent(lines.join('\n'))
-      window.open(`https://wa.me/5543991598585?text=${text}`, '_blank', 'noopener,noreferrer')
+      openWhatsAppWithText(lines.join('\n'))
 
       setFormData({
         name: '',
@@ -154,6 +154,7 @@ export default function ContatoPage() {
                       <SelectItem value="orcamento">Solicitar Orçamento</SelectItem>
                       <SelectItem value="duvida">Dúvida sobre Produto</SelectItem>
                       <SelectItem value="suporte">Suporte Técnico</SelectItem>
+                      <SelectItem value="frete">Cotar Frete</SelectItem>
                       <SelectItem value="outro">Outro</SelectItem>
                     </SelectContent>
                   </Select>

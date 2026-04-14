@@ -302,6 +302,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
                 </div>
                 <div className="flex gap-2">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => handleEdit(optional)}
@@ -309,6 +310,7 @@ export function OptionalsSection({ productId }: OptionalsSectionProps) {
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
+                    type="button"
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(optional.id)}

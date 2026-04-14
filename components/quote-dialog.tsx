@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
 
-const DEFAULT_WHATSAPP_E164 = '5543991598585'
+import { getWhatsAppDigits, getPublicSiteBaseUrl } from '@/lib/whatsapp'
 
 type OptionalRow = {
   id: string
@@ -39,9 +39,7 @@ function formatOptionalForWhatsApp(opt: OptionalRow) {
     opt.showPrice && opt.price != null
       ? ` - R$ ${opt.price.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       : ' - Sob consulta'
-  let line = `✓ ${opt.name}${priceInfo}`
-  if (opt.description) line += `\n  ${opt.description}`
-  return line
+  return '\u2713 ' + opt.name + priceInfo
 }
 
 function buildWhatsAppMessage(params: {
@@ -53,32 +51,29 @@ function buildWhatsAppMessage(params: {
   productSlug?: string
   optionals: OptionalRow[]
 }) {
-  const baseUrl =
-    typeof window !== 'undefined'
-      ? window.location.origin
-      : process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+  const baseUrl = getPublicSiteBaseUrl()
 
   const lines: string[] = [
     'Olá! Gostaria de solicitar um orçamento pela Levita.',
     '',
-    `*Nome:* ${params.name}`,
-    `*E-mail:* ${params.email}`,
+    `Nome: ${params.name}`,
+    `E-mail: ${params.email}`,
   ]
   if (params.phone.trim()) {
-    lines.push(`*Telefone:* ${params.phone.trim()}`)
+    lines.push(`Telefone: ${params.phone.trim()}`)
   }
   lines.push('')
   if (params.productName) {
-    lines.push(`*Produto:* ${params.productName}`)
+    lines.push(`Produto: ${params.productName}`)
   }
   if (params.productSlug) {
-    lines.push(`*Página do produto:* ${baseUrl}/produtos/${params.productSlug}`)
+    lines.push(`Link: ${baseUrl}/produtos/${params.productSlug}`)
   }
   if (params.optionals.length > 0) {
-    lines.push('', '*Monte sua Cama (opcionais selecionados):*')
+    lines.push('', 'Monte sua Cama (opcionais selecionados):', '')
     params.optionals.forEach((o) => lines.push(formatOptionalForWhatsApp(o)))
   }
-  lines.push('', '*Mensagem:*', params.message)
+  lines.push('', 'Mensagem:', params.message)
   return lines.join('\n')
 }
 
@@ -136,8 +131,7 @@ export function QuoteDialog({
         optionals,
       })
 
-      const phone =
-        process.env.NEXT_PUBLIC_WHATSAPP_PHONE?.replace(/\D/g, '') || DEFAULT_WHATSAPP_E164
+      const phone = getWhatsAppDigits()
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
 
       window.open(url, '_blank', 'noopener,noreferrer')

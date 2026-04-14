@@ -1,9 +1,16 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Upload, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface ImageUploadCropperProps {
   folder: string
@@ -18,30 +25,42 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
   const [zoom, setZoom] = useState(1)
   const [offsetX, setOffsetX] = useState(0)
   const [offsetY, setOffsetY] = useState(0)
+  const [imageReady, setImageReady] = useState(false) // 🔧 novo: controla se imagem foi carregada
+
   const imageRef = useRef<HTMLImageElement | null>(null)
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
-  const drawToCanvas = (canvas: HTMLCanvasElement, outputSize: number) => {
-    const img = imageRef.current
-    if (!img) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  // 🔧 useCallback garante referência estável para usar no useEffect
+  const drawToCanvas = useCallback(
+    (canvas: HTMLCanvasElement, outputSize: number) => {
+      const img = imageRef.current
+      if (!img) return
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    canvas.width = outputSize
-    canvas.height = outputSize
+      canvas.width = outputSize
+      canvas.height = outputSize
 
-    // Cover base: garante enquadramento completo no quadrado
-    const baseScale = Math.max(outputSize / img.naturalWidth, outputSize / img.naturalHeight)
-    const renderW = img.naturalWidth * baseScale * zoom
-    const renderH = img.naturalHeight * baseScale * zoom
-    const centerX = outputSize / 2 + offsetX
-    const centerY = outputSize / 2 + offsetY
+      const baseScale = Math.max(outputSize / img.naturalWidth, outputSize / img.naturalHeight)
+      const renderW = img.naturalWidth * baseScale * zoom
+      const renderH = img.naturalHeight * baseScale * zoom
+      const centerX = outputSize / 2 + offsetX
+      const centerY = outputSize / 2 + offsetY
 
-    ctx.clearRect(0, 0, outputSize, outputSize)
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, outputSize, outputSize)
-    ctx.drawImage(img, centerX - renderW / 2, centerY - renderH / 2, renderW, renderH)
-  }
+      ctx.clearRect(0, 0, outputSize, outputSize)
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, outputSize, outputSize)
+      ctx.drawImage(img, centerX - renderW / 2, centerY - renderH / 2, renderW, renderH)
+    },
+    [zoom, offsetX, offsetY],
+  )
+
+  // 🔧 Só redesenha quando a imagem estiver pronta E os parâmetros mudarem
+  useEffect(() => {
+    const canvas = previewCanvasRef.current
+    if (!canvas || !imageReady) return
+    drawToCanvas(canvas, 320)
+  }, [drawToCanvas, imageReady])
 
   const handleChooseFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0]
@@ -63,6 +82,7 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
     setZoom(1)
     setOffsetX(0)
     setOffsetY(0)
+    setImageReady(false) // 🔧 reseta antes de abrir o modal
     setModalOpen(true)
     e.target.value = ''
   }
@@ -73,74 +93,51 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
     setPreviewUrl('')
     setFile(null)
     imageRef.current = null
+    setImageReady(false)
     setZoom(1)
     setOffsetX(0)
     setOffsetY(0)
   }
 
-  useEffect(() => {
-    const canvas = previewCanvasRef.current
-    if (!canvas || !imageRef.current) return
-    drawToCanvas(canvas, 320)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoom, offsetX, offsetY, modalOpen])
+  // 🔧 Usa o próprio elemento <img> do evento em vez de criar um novo Image()
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    imageRef.current = e.currentTarget
+    setImageReady(true) // dispara o useEffect acima
+  }
 
   const cropAndUpload = async () => {
-    if (!file || !previewUrl) return
+    if (!file || !imageRef.current) return
     setUploading(true)
     try {
-      if (!imageRef.current) {
-        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-          const image = new Image()
-          image.onload = () => resolve(image)
-          image.onerror = reject
-          image.src = previewUrl
-        })
-        imageRef.current = img
-      }
-
       const outputSize = 1200
       const canvas = document.createElement('canvas')
       drawToCanvas(canvas, outputSize)
 
       const blob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((result) => (result ? resolve(result) : reject(new Error('Falha ao gerar imagem'))), 'image/jpeg', 0.92)
+        canvas.toBlob(
+          (result) => (result ? resolve(result) : reject(new Error('Falha ao gerar imagem'))),
+          'image/jpeg',
+          0.92,
+        )
       })
 
-      const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' })
+      const croppedFile = new File([blob], file.name.replace(/\.\w+$/, '.jpg'), {
+        type: 'image/jpeg',
+      })
       const uploadFormData = new FormData()
       uploadFormData.append('file', croppedFile)
       uploadFormData.append('folder', folder)
 
-      // Mantém o mesmo fluxo de upload atual do projeto (Cloudinary via /api/upload)
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      })
-
+      const res = await fetch('/api/upload', { method: 'POST', body: uploadFormData })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erro ao fazer upload')
+
       onUploaded({ url: data.url, alt: file.name })
       closeModal()
     } catch (error: any) {
       alert(error.message || 'Erro ao processar imagem')
     } finally {
       setUploading(false)
-    }
-  }
-
-  const handleImageLoad = async () => {
-    if (!previewUrl) return
-    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const image = new Image()
-        image.onload = () => resolve(image)
-        image.onerror = reject
-      image.src = previewUrl
-    })
-    imageRef.current = img
-    const canvas = previewCanvasRef.current
-    if (canvas) {
-      drawToCanvas(canvas, 320)
     }
   }
 
@@ -161,7 +158,10 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
           className="hidden"
           disabled={uploading}
         />
-        <label htmlFor={`image-upload-${folder}`} className={`flex flex-col items-center justify-center cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <label
+          htmlFor={`image-upload-${folder}`}
+          className={`flex flex-col items-center justify-center cursor-pointer ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
           {uploading ? (
             <>
               <Loader2 className="h-12 w-12 text-[#67CBDD] animate-spin mb-4" />
@@ -185,24 +185,40 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Carrega imagem em memória para desenhar no canvas */}
-            {previewUrl && <img src={previewUrl} alt="" className="hidden" onLoad={handleImageLoad} />}
+            {/* 🔧 onLoad agora recebe o evento com o elemento diretamente */}
+            {previewUrl && (
+              <img src={previewUrl} alt="" className="hidden" onLoad={handleImageLoad} />
+            )}
 
-            <div className="mx-auto h-80 w-80 overflow-hidden rounded-lg border bg-gray-100">
-              <canvas ref={previewCanvasRef} className="h-full w-full" />
+            {/* 🔧 canvas com width/height explícitos evita distorção */}
+            <div className="mx-auto overflow-hidden rounded-lg border bg-gray-100" style={{ width: 320, height: 320 }}>
+              <canvas ref={previewCanvasRef} width={320} height={320} />
             </div>
+
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium">Zoom</label>
-                <input type="range" min="1" max="3" step="0.01" value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="w-full" />
+                <input
+                  type="range" min="1" max="3" step="0.01"
+                  value={zoom} onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full"
+                />
               </div>
               <div>
                 <label className="text-sm font-medium">Mover horizontal</label>
-                <input type="range" min="-140" max="140" step="1" value={offsetX} onChange={(e) => setOffsetX(Number(e.target.value))} className="w-full" />
+                <input
+                  type="range" min="-140" max="140" step="1"
+                  value={offsetX} onChange={(e) => setOffsetX(Number(e.target.value))}
+                  className="w-full"
+                />
               </div>
               <div>
                 <label className="text-sm font-medium">Mover vertical</label>
-                <input type="range" min="-140" max="140" step="1" value={offsetY} onChange={(e) => setOffsetY(Number(e.target.value))} className="w-full" />
+                <input
+                  type="range" min="-140" max="140" step="1"
+                  value={offsetY} onChange={(e) => setOffsetY(Number(e.target.value))}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
@@ -214,7 +230,12 @@ export function ImageUploadCropper({ folder, onUploaded }: ImageUploadCropperPro
             <Button type="button" variant="outline" onClick={closeModal} disabled={uploading}>
               Cancelar
             </Button>
-            <Button type="button" onClick={cropAndUpload} disabled={uploading} className="bg-[#67CBDD] hover:bg-[#4FA8B8]">
+            <Button
+              type="button"
+              onClick={cropAndUpload}
+              disabled={uploading || !imageReady} // 🔧 desabilita enquanto imagem não carregou
+              className="bg-[#67CBDD] hover:bg-[#4FA8B8]"
+            >
               {uploading ? 'Salvando...' : 'Aplicar e enviar'}
             </Button>
           </DialogFooter>

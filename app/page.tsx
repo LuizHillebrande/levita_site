@@ -7,16 +7,18 @@ import { QuemSomosSection } from '@/components/quem-somos-section'
 import { FeaturedProducts } from '@/components/featured-products'
 import { CertificationsSection } from '@/components/certifications-section'
 import { CategoriesSection } from '@/components/categories-section'
+import { DistributorBanner } from '@/components/distributor-banner'
 
 export default function Home() {
   return (
     <div className="flex flex-col">
+      <DistributorBanner />
       <a
-        href="https://wa.me/5543991598585"
+        href="https://wa.me/5543996000948"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Falar no WhatsApp"
-        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-transform hover:scale-105"
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-transform hover:scale-105"
       >
         <svg viewBox="0 0 32 32" className="h-8 w-8 fill-current" aria-hidden="true">
           <path d="M19.11 17.36c-.28-.14-1.66-.82-1.92-.91-.26-.1-.45-.14-.64.14-.19.28-.73.91-.89 1.09-.16.19-.33.21-.6.07-.28-.14-1.17-.43-2.23-1.37-.82-.73-1.37-1.63-1.53-1.91-.16-.28-.02-.43.12-.57.12-.12.28-.33.42-.49.14-.16.19-.28.28-.47.09-.19.05-.35-.02-.49-.07-.14-.64-1.54-.87-2.11-.23-.55-.47-.47-.64-.48l-.55-.01c-.19 0-.49.07-.75.35-.26.28-.98.96-.98 2.34s1.01 2.72 1.15 2.91c.14.19 1.98 3.03 4.8 4.25.67.29 1.19.46 1.59.59.67.21 1.29.18 1.78.11.54-.08 1.66-.68 1.9-1.34.23-.66.23-1.22.16-1.34-.07-.12-.26-.19-.54-.33z" />

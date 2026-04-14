@@ -94,11 +94,10 @@ export function BuildYourBed({ productId, onSelectionChange, onImageOverrideChan
     <Card className="mt-8">
       <CardHeader>
         <CardTitle className="text-2xl flex items-center gap-2">
-          <span>🛏️</span>
-          Monte sua Cama
+          Opcionais
         </CardTitle>
         <p className="text-gray-600 mt-2">
-          Selecione os opcionais e acessórios desejados para personalizar sua cama hospitalar
+        Selecione acessórios e componentes opcionais para completar seu produto
         </p>
       </CardHeader>
       <CardContent>
