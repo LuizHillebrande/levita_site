@@ -7,9 +7,6 @@ import { QuemSomosSection } from '@/components/quem-somos-section'
 import { FeaturedProducts } from '@/components/featured-products'
 import { CertificationsSection } from '@/components/certifications-section'
 import { CategoriesSection } from '@/components/categories-section'
-import dynamic from 'next/dynamic'
-
-const ModelViewer = dynamic(() => import('@/components/model-viewer'), { ssr: false })
 
 export default function Home() {
   return (
@@ -30,14 +27,6 @@ export default function Home() {
       <HeroCarousel />
       <StatsCounter />
 
-      <section className="bg-[#f4f8fa] px-4 py-8 md:px-10">
-        <div className="mx-auto w-full max-w-[1280px]">
-          <p className="mb-3 text-sm font-medium uppercase tracking-[0.08em] text-[#6b8a99]">
-          </p>
-          <ModelViewer />
-        </div>
-      </section>
-
       <CategoriesSection />
       <QuemSomosSection />
       <FeaturedProducts />
@@ -48,7 +37,7 @@ export default function Home() {
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div className="space-y-6">
               <div>
-                <h2 className="mb-4 text-4xl font-bold text-secondary md:text-5xl">Quem Somos</h2>
+                <h2 className="mb-4 text-4xl font-bold text-secondary md:text-5xl">Nossa História </h2>
                 <div className="mb-6 h-1 w-24 rounded-full bg-[#67CBDD]"></div>
               </div>
               <div className="space-y-4 text-lg leading-relaxed text-gray-700">
@@ -64,7 +53,7 @@ export default function Home() {
                 </p>
               </div>
               <Button asChild size="lg" className="bg-[#67CBDD] text-white hover:bg-[#4FA8B8]">
-                <Link href="/sobre">Saiba Mais</Link>
+                <Link href="/contato">Saiba Mais</Link>
               </Button>
             </div>
             <div className="rounded-xl border-2 border-[#67CBDD]/20 bg-white/80 p-8 shadow-2xl backdrop-blur-sm">

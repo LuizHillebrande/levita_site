@@ -10,19 +10,69 @@ import { Phone, Mail, Clock, MapPin } from 'lucide-react'
 import { useState } from 'react'
 
 export default function ContatoPage() {
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
+    buyerType: '',
     subject: '',
     message: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implementar envio do formulário
-    console.log('Form submitted:', formData)
-    alert('Mensagem enviada com sucesso! Entraremos em contato em breve.')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao salvar solicitação')
+      }
+
+      const buyerLabelMap: Record<string, string> = {
+        distribuidor: 'Distribuidor',
+        'orgao-publico': 'Órgão Público',
+        'pessoa-fisica': 'Pessoa Física',
+        hospital: 'Hospital / Clínica',
+        'empresa-privada': 'Empresa Privada',
+        outro: 'Outro',
+      }
+
+      const lines = [
+        'Olá! Vim pelo site da Levita e gostaria de solicitar um orçamento.',
+        '',
+        `*Nome:* ${formData.name}`,
+        `*E-mail:* ${formData.email}`,
+        `*Telefone:* ${formData.phone || 'Não informado'}`,
+        `*Tipo de comprador:* ${buyerLabelMap[formData.buyerType] || 'Não informado'}`,
+        `*Assunto:* ${formData.subject || 'Não informado'}`,
+        '',
+        '*Mensagem:*',
+        formData.message,
+      ]
+
+      const text = encodeURIComponent(lines.join('\n'))
+      window.open(`https://wa.me/5543991598585?text=${text}`, '_blank', 'noopener,noreferrer')
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        buyerType: '',
+        subject: '',
+        message: '',
+      })
+    } catch (error: any) {
+      alert(error.message || 'Erro ao enviar solicitação')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -72,6 +122,26 @@ export default function ContatoPage() {
                 </div>
 
                 <div>
+                  <Label htmlFor="buyerType">Tipo de Comprador</Label>
+                  <Select
+                    value={formData.buyerType}
+                    onValueChange={(value) => setFormData({ ...formData, buyerType: value })}
+                  >
+                    <SelectTrigger id="buyerType">
+                      <SelectValue placeholder="Selecione o tipo de comprador" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="distribuidor">Distribuidor</SelectItem>
+                      <SelectItem value="orgao-publico">Órgão Público</SelectItem>
+                      <SelectItem value="pessoa-fisica">Pessoa Física</SelectItem>
+                      <SelectItem value="hospital">Hospital / Clínica</SelectItem>
+                      <SelectItem value="empresa-privada">Empresa Privada</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="subject">Assunto</Label>
                   <Select
                     value={formData.subject}
@@ -100,8 +170,8 @@ export default function ContatoPage() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Enviar Mensagem
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                  {loading ? 'Enviando...' : 'Enviar para WhatsApp'}
                 </Button>
               </form>
             </CardContent>

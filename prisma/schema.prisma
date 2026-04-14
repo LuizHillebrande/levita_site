@@ -82,6 +82,7 @@ model Contact {
   name      String
   email     String
   phone     String?
+  buyerType String?
   subject   String?
   message   String
   productId String? // Se o contato veio de um produto específico

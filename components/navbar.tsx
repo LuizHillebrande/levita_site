@@ -54,6 +54,7 @@ export function Navbar() {
 
   const menuItems = [
     { href: '/', label: 'Home' },
+    { href: '/levita-3d', label: 'Levita 3D' },
     { href: '/#quem-somos', label: 'Quem Somos' },
     { href: '/produtos', label: 'Monte sua Cama' },
     { href: '/contato', label: 'Contato' },
@@ -71,26 +72,26 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-[#f0f2f5] bg-white">
       <div className="mx-auto max-w-[1280px] px-4 md:px-10">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-24 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image
               src="/images/logo/logo.png"
               alt="Levita Móveis Hospitalares"
-              width={200}
-              height={84}
-              className="h-12 w-auto"
+              width={290}
+              height={120}
+              className="h-16 w-auto"
               priority
             />
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden flex-1 items-center justify-center space-x-6 lg:flex">
+          <div className="hidden flex-1 items-center justify-center space-x-8 px-6 lg:flex">
             {menuItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
+                className="whitespace-nowrap text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
               >
                 {item.label}
               </Link>
@@ -100,7 +101,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsProductsDropdownOpen(!isProductsDropdownOpen)}
-                className="flex items-center space-x-1 text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
+                className="flex items-center space-x-1 whitespace-nowrap text-[14px] font-medium text-[#3a5068] transition-colors hover:text-[#1a3060]"
               >
                 <span>Produtos</span>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isProductsDropdownOpen ? 'rotate-180' : ''}`} />
@@ -131,14 +132,14 @@ export function Navbar() {
           </div>
 
           {/* Search Bar Desktop */}
-          <div className="ml-4 hidden max-w-md flex-1 items-center space-x-4 md:flex">
+          <div className="ml-2 hidden max-w-md flex-1 items-center space-x-4 md:flex">
             <form onSubmit={handleSearch} className="flex-1 relative">
               <Input
                 type="search"
                 placeholder="Pesquisar produtos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-10 w-[200px] rounded-[10px] border border-[#e0eef2] bg-[#f5f8fa] py-2 pl-10 pr-[14px] text-[13px] text-[#8ab0bb] placeholder:text-[#8ab0bb] focus:border-[#3dc8d4]"
+                className="h-10 w-[190px] rounded-[10px] border border-[#e0eef2] bg-[#f5f8fa] py-2 pl-10 pr-[14px] text-[13px] text-[#8ab0bb] placeholder:text-[#8ab0bb] focus:border-[#3dc8d4]"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             </form>
