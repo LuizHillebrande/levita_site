@@ -80,7 +80,7 @@ export function Navbar() {
               alt="Levita Móveis Hospitalares"
               width={290}
               height={120}
-              className="h-16 w-auto"
+              className="h-24 w-auto"
               priority
             />
           </Link>

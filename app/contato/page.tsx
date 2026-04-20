@@ -214,7 +214,7 @@ export default function ContatoPage() {
                   <MapPin className="h-6 w-6 text-primary mt-1" />
                   <div>
                     <p className="font-semibold">Localização</p>
-                    <p className="text-gray-600">Londrina - PR</p>
+                    <p className="text-gray-600">Cambé - PR</p>
                   </div>
                 </div>
               </CardContent>

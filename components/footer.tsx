@@ -56,7 +56,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-gray-300 mb-4">
-              Fabricantes de móveis hospitalares, consolidados como a marca mais lembrada 
+              Fabricantes de móveis hospitalares, nos tornamos a marca mais lembrada 
               pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.
             </p>
             <div className="flex space-x-4">

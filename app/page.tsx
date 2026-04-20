@@ -44,9 +44,8 @@ export default function Home() {
               </div>
               <div className="space-y-4 text-lg leading-relaxed text-gray-700">
                 <p>
-                  Fabricantes de móveis hospitalares, nos consolidamos como a marca mais lembrada
-                  pelo paranaense através da qualidade e por meio de um sistema de distribuição
-                  eficaz.
+                  Fabricantes de móveis hospitalares, atendendo em todo o Brasil, com mais de 
+                  40 anos de experiência, nos tornamos a marca mais lembrada pelo brasileiro.
                 </p>
                 <p>
                   Pioneiros na região de Londrina neste ramo, somos conhecidos por manter um padrão
