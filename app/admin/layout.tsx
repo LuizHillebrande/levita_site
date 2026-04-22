@@ -5,11 +5,11 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
-  LayoutDashboard,
   Package,
   FolderTree,
   FileText,
   Award,
+  BarChart3,
   LogOut,
   Menu,
   X,
@@ -54,6 +54,7 @@ export default function AdminLayout({
   }
 
   const menuItems = [
+    { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/admin/products', label: 'Produtos', icon: Package },
     { href: '/admin/categories', label: 'Categorias', icon: FolderTree },
     { href: '/admin/reviews', label: 'Avaliações', icon: MessageSquareQuote },
