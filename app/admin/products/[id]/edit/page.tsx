@@ -9,10 +9,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Plus, X, FileText } from 'lucide-react'
+import { Plus, X, Play } from 'lucide-react'
 import Image from 'next/image'
 import { OptionalsSection } from '../optionals-section'
 import { ImageUploadCropper } from '@/components/admin/image-upload-cropper'
+import { VideoUpload } from '@/components/admin/video-upload'
 
 interface Category {
   id: string
@@ -46,6 +47,9 @@ export default function EditProductPage() {
   
   // Imagens
   const [images, setImages] = useState<Array<{ id?: string; url: string; alt?: string; order: number }>>([])
+
+  // Vídeos
+  const [videos, setVideos] = useState<Array<{ id?: string; url: string; title?: string; order: number }>>([])
   
   // Especificações simples (padrão)
   const simpleSpecsLabels = [
@@ -148,6 +152,15 @@ export default function EditProductPage() {
             url: img.url,
             alt: img.alt || product.name,
             order: img.order !== undefined ? img.order : index,
+          })))
+        }
+
+        if (product.videos && product.videos.length > 0) {
+          setVideos(product.videos.map((video: any, index: number) => ({
+            id: video.id,
+            url: video.url,
+            title: video.title || product.name,
+            order: video.order !== undefined ? video.order : index,
           })))
         }
         
@@ -272,6 +285,24 @@ export default function EditProductPage() {
     setImages(reordered)
   }
 
+  const removeVideo = (index: number) => {
+    const updated = videos.filter((_, i) => i !== index)
+    const reordered = updated.map((video, i) => ({ ...video, order: i }))
+    setVideos(reordered)
+  }
+
+  const moveVideo = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return
+    if (direction === 'down' && index === videos.length - 1) return
+
+    const updated = [...videos]
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    ;[updated[index], updated[newIndex]] = [updated[newIndex], updated[index]]
+
+    const reordered = updated.map((video, i) => ({ ...video, order: i }))
+    setVideos(reordered)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -308,6 +339,11 @@ export default function EditProductPage() {
             url: img.url,
             alt: img.alt || formData.name,
             order: img.order,
+          })),
+          videos: videos.map(video => ({
+            url: video.url,
+            title: video.title || formData.name,
+            order: video.order,
           })),
         }),
       })
@@ -517,6 +553,95 @@ export default function EditProductPage() {
             {images.length === 0 && (
               <p className="text-sm text-gray-500 text-center mt-4">
                 Nenhuma imagem adicionada ainda
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Vídeos do Produto */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Vídeos do Produto</CardTitle>
+            <CardDescription>
+              Faça upload de vídeos para aparecerem na galeria pública do produto.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <VideoUpload
+              folder="products/videos"
+              onUploaded={({ url, title }) =>
+                setVideos((prev) => [...prev, { url, title, order: prev.length }])
+              }
+            />
+
+            {videos.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                {videos.map((video, index) => (
+                  <div
+                    key={video.id || `${video.url}-${index}`}
+                    className="relative group border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-950"
+                  >
+                    <div className="aspect-video relative">
+                      <video
+                        src={video.url}
+                        className="h-full w-full object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="rounded-full bg-black/60 p-3 text-white">
+                          <Play className="h-6 w-6 fill-white" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-white">
+                      <p className="text-sm font-medium text-gray-700 line-clamp-1">
+                        {video.title || `Vídeo ${index + 1}`}
+                      </p>
+                    </div>
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => moveVideo(index, 'up')}
+                        disabled={index === 0}
+                        className="h-8 w-8 p-0"
+                      >
+                        ↑
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => moveVideo(index, 'down')}
+                        disabled={index === videos.length - 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        ↓
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeVideo(index)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="absolute top-2 left-2 bg-[#67CBDD] text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                      {index + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {videos.length === 0 && (
+              <p className="text-sm text-gray-500 text-center mt-4">
+                Nenhum vídeo adicionado ainda
               </p>
             )}
           </CardContent>

@@ -10,7 +10,7 @@ function createClient() {
 
 /**
  * Em dev, `globalThis.prisma` pode ter sido criado antes de `prisma generate`
- * adicionar novos models (ex.: ProductReview). A instância antiga não expõe o delegate.
+ * adicionar novos models (ex.: ProductReview/ProductVideo). A instância antiga não expõe o delegate.
  * Se o client novo já tiver `productReview` e o cache não, substituímos uma vez.
  */
 function getClient(): PrismaClient {
@@ -28,10 +28,12 @@ function getClient(): PrismaClient {
     return client
   }
 
-  const cached = client as unknown as { productReview?: unknown }
-  if (typeof cached.productReview === 'undefined') {
+  const cached = client as unknown as { productReview?: unknown; productVideo?: unknown }
+  if (typeof cached.productReview === 'undefined' || typeof cached.productVideo === 'undefined') {
     const fresh = createClient()
-    const freshHas = typeof (fresh as unknown as { productReview?: unknown }).productReview !== 'undefined'
+    const freshTyped = fresh as unknown as { productReview?: unknown; productVideo?: unknown }
+    const freshHas =
+      typeof freshTyped.productReview !== 'undefined' && typeof freshTyped.productVideo !== 'undefined'
     if (freshHas) {
       globalForPrisma.prisma = fresh
       return fresh

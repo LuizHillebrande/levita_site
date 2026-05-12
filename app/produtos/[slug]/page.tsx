@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Search, ArrowLeft, Star, StarHalf } from 'lucide-react'
+import { Loader2, Search, ArrowLeft, Star, StarHalf, Play, X } from 'lucide-react'
 import { BuildYourBed, SelectedOptionalSummary } from '@/components/build-your-bed'
 import Link from 'next/link'
 import { formatProductQuoteWhatsAppMessage, openWhatsAppWithText, getPublicSiteBaseUrl } from '@/lib/whatsapp'
@@ -25,6 +25,11 @@ interface Product {
     id: string
     url: string
     alt?: string
+  }>
+  videos?: Array<{
+    id: string
+    url: string
+    title?: string
   }>
   technicalSpecs?: Record<string, string>
   documentation?: string[]
@@ -51,6 +56,7 @@ export default function ProdutoPage() {
   const [loading, setLoading] = useState(true)
   const [isCategory, setIsCategory] = useState<boolean | null>(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null)
   const [imageOverrideUrl, setImageOverrideUrl] = useState<string | null>(null)
   const [selectedOptionals, setSelectedOptionals] = useState<string[]>([])
   const [selectedOptionalsSummary, setSelectedOptionalsSummary] = useState<SelectedOptionalSummary[]>([])
@@ -85,6 +91,8 @@ export default function ProdutoPage() {
       } else if (foundProduct) {
         setIsCategory(false)
         setProduct(foundProduct)
+        setSelectedImageIndex(0)
+        setActiveVideoIndex(null)
         setImageOverrideUrl(null)
         setLoading(false)
       } else {
@@ -271,13 +279,19 @@ export default function ProdutoPage() {
     )
   }
 
-  const mainImage = product.images && product.images.length > 0 
+  const productVideos = product.videos || []
+  const selectedImage = product.images && product.images.length > 0
     ? product.images[selectedImageIndex] || product.images[0]
     : null
+  const activeVideo = activeVideoIndex !== null ? productVideos[activeVideoIndex] : null
 
   const displayedMainImage = imageOverrideUrl
-    ? { url: imageOverrideUrl, alt: `${product.name} (com opcional)` }
-    : mainImage
+    ? {
+        id: 'optional-override',
+        url: imageOverrideUrl,
+        alt: `${product.name} (com opcional)`,
+      }
+    : selectedImage
 
   const technicalSpecs = product.technicalSpecs || {}
 
@@ -298,19 +312,33 @@ export default function ProdutoPage() {
   return (
     <div className="container mx-auto px-4 py-12 pb-20">
       <div className="grid md:grid-cols-2 gap-12">
-        {/* Galeria de Imagens */}
+        {/* Galeria de imagens */}
         <div>
           {displayedMainImage ? (
             <>
-              <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden relative">
-                <Image
-                  src={displayedMainImage.url}
-                  alt={displayedMainImage.alt || product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
+              <div className="relative mb-4">
+                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                  <Image
+                    src={displayedMainImage.url}
+                    alt={displayedMainImage.alt || product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    priority
+                  />
+                </div>
+                {productVideos.length > 0 && (
+                  <div className="mt-3 flex items-center md:absolute md:right-full md:top-1/3 md:z-10 md:mr-4 md:mt-0 md:-translate-y-1/2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveVideoIndex(0)}
+                      className="flex h-14 w-14 items-center justify-center rounded-full bg-[#67CBDD] text-white shadow-2xl ring-4 ring-white/80 transition-transform hover:scale-105 hover:bg-[#4FA8B8] focus:outline-none focus:ring-4 focus:ring-[#67CBDD]/40 md:h-20 md:w-20 md:ring-8"
+                      aria-label="Assistir vídeo do produto"
+                    >
+                      <Play className="ml-0.5 h-6 w-6 fill-white md:h-9 md:w-9" strokeWidth={2.5} />
+                    </button>
+                  </div>
+                )}
               </div>
               {product.images.length > 1 && (
                 <div className="grid grid-cols-4 gap-2">
@@ -318,13 +346,13 @@ export default function ProdutoPage() {
                     <div
                       key={image.id}
                       className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                        index === selectedImageIndex
+                        index === selectedImageIndex && !imageOverrideUrl
                           ? 'border-[#67CBDD] opacity-100'
                           : 'border-transparent opacity-70 hover:opacity-100'
                       }`}
                       onClick={() => {
                         setSelectedImageIndex(index)
-                        // Se existir override por opcional, mantemos o comportamento "opcional manda" (MVP).
+                        setImageOverrideUrl(null)
                       }}
                     >
                       <Image
@@ -340,8 +368,22 @@ export default function ProdutoPage() {
               )}
             </>
           ) : (
-            <div className="aspect-square bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
-              <span className="text-8xl">🛏️</span>
+            <div className="relative mb-4">
+              <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-8xl">🛏️</span>
+              </div>
+              {productVideos.length > 0 && (
+                <div className="mt-3 flex items-center md:absolute md:right-full md:top-1/3 md:z-10 md:mr-4 md:mt-0 md:-translate-y-1/2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveVideoIndex(0)}
+                    className="flex h-14 w-14 items-center justify-center rounded-full bg-[#67CBDD] text-white shadow-2xl ring-4 ring-white/80 transition-transform hover:scale-105 hover:bg-[#4FA8B8] focus:outline-none focus:ring-4 focus:ring-[#67CBDD]/40 md:h-20 md:w-20 md:ring-8"
+                    aria-label="Assistir vídeo do produto"
+                  >
+                    <Play className="ml-0.5 h-6 w-6 fill-white md:h-9 md:w-9" strokeWidth={2.5} />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -554,6 +596,40 @@ export default function ProdutoPage() {
       )}
 
       <ProductReviewsSection productId={product.id} productName={product.name} />
+
+      {activeVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 backdrop-blur-sm md:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label={activeVideo.title || `Vídeo de ${product.name}`}
+          onClick={() => setActiveVideoIndex(null)}
+        >
+          <div
+            className="relative flex h-[82vh] w-[96vw] max-w-[1400px] items-center justify-center overflow-hidden rounded-xl bg-black shadow-2xl md:h-[88vh] md:rounded-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setActiveVideoIndex(null)}
+              className="absolute right-3 top-3 z-10 rounded-full bg-black/70 p-2 text-white transition-colors hover:bg-black"
+              aria-label="Fechar vídeo"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <video
+              src={activeVideo.url}
+              className="h-full w-full bg-black object-contain"
+              controls
+              autoPlay
+              playsInline
+              preload="metadata"
+            >
+              Seu navegador não suporta a reprodução deste vídeo.
+            </video>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

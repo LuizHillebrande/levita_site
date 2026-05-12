@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('file') as File
     const folder = formData.get('folder') as string || 'products'
+    const resourceType = formData.get('resourceType') === 'video' ? 'video' : 'image'
 
     if (!file) {
       return NextResponse.json(
@@ -49,10 +50,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar tipo de arquivo
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    const allowedTypes =
+      resourceType === 'video'
+        ? ['video/mp4', 'video/webm', 'video/quicktime']
+        : ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Tipo de arquivo não permitido. Use JPG, PNG ou WEBP' },
+        {
+          error:
+            resourceType === 'video'
+              ? 'Tipo de arquivo não permitido. Use MP4, WEBM ou MOV'
+              : 'Tipo de arquivo não permitido. Use JPG, PNG ou WEBP',
+        },
         { status: 400 }
       )
     }
@@ -65,24 +74,22 @@ export async function POST(request: NextRequest) {
     const base64 = buffer.toString('base64')
     const dataURI = `data:${file.type};base64,${base64}`
 
-    // Upload para Cloudinary
-    const result = await new Promise((resolve, reject) => {
-      cloudinary.uploader.upload(
-        dataURI,
-        {
-          folder: `levita-moveis/${folder}`,
-          resource_type: 'image',
-          transformation: [
-            { quality: 'auto' },
-            { fetch_format: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error) reject(error)
-          else resolve(result)
-        }
-      )
-    }) as any
+    const uploadOptions =
+      resourceType === 'image'
+        ? {
+            folder: `levita-moveis/${folder}`,
+            resource_type: 'image' as const,
+            transformation: [
+              { quality: 'auto' },
+              { fetch_format: 'auto' },
+            ],
+          }
+        : {
+            folder: `levita-moveis/${folder}`,
+            resource_type: 'video' as const,
+          }
+
+    const result = await cloudinary.uploader.upload(dataURI, uploadOptions)
 
     return NextResponse.json({
       url: result.secure_url,
@@ -90,10 +97,10 @@ export async function POST(request: NextRequest) {
       width: result.width,
       height: result.height,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading file to Cloudinary:', error)
     return NextResponse.json(
-      { error: 'Erro ao fazer upload do arquivo' },
+      { error: error?.message || 'Erro ao fazer upload do arquivo' },
       { status: 500 }
     )
   }

@@ -47,6 +47,7 @@ model Product {
   categoryId       String?
   category         Category?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images           ProductImage[]
+  videos           ProductVideo[]
   optionals        ProductOptional[]
   reviews          ProductReview[]
   specifications   String? // Para armazenar ficha técnica como JSON (String no SQLite)
@@ -64,6 +65,18 @@ model ProductImage {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+model ProductVideo {
+  id        String   @id @default(cuid())
+  url       String
+  title     String?
+  order     Int      @default(0)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
 }
 
 model Page {
