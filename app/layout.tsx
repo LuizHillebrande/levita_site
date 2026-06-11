@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import './globals.css'
+import { Analytics } from '@/components/analytics'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
+        <Analytics />
       </head>
       <body className={`${dmSans.variable} ${dmSerif.variable}`}>
         <Navbar />

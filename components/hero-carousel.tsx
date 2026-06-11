@@ -19,7 +19,7 @@ export function HeroCarousel() {
       buttonText: 'Ver Produtos',
       buttonLink: '/produtos',
       text: 'A marca mais lembrada pelo paranaense através da qualidade e por meio de um sistema de distribuição eficaz.',
-    },
+    },  
     {
       imageDesktop: '/images/banners/home-02-desktop.png',
       imageMobile: '/images/banners/home-02-mobile.png',
