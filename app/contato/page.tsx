@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Phone, Mail, Clock, MapPin } from 'lucide-react'
 import { useState } from 'react'
+import { trackLeadConversion } from '@/lib/gtag'
 import { openWhatsAppWithText } from '@/lib/whatsapp'
 
 export default function ContatoPage() {
@@ -35,6 +36,8 @@ export default function ContatoPage() {
       if (!res.ok) {
         throw new Error(data.error || 'Erro ao salvar solicitação')
       }
+
+      trackLeadConversion()
 
       const buyerLabelMap: Record<string, string> = {
         distribuidor: 'Distribuidor',
