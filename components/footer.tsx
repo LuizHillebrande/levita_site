@@ -96,6 +96,11 @@ export function Footer() {
                   Contato
                 </Link>
               </li>
+              <li>
+                <Link href="/devolucao" className="text-gray-300 hover:text-accent transition-colors">
+                  Termos e Condições
+                </Link>
+              </li>
             </ul>
           </div>
 
