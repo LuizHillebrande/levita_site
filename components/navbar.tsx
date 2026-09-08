@@ -58,6 +58,7 @@ export function Navbar() {
     { href: '/#quem-somos', label: 'Quem Somos' },
     { href: '/produtos', label: 'Opcionais' },
     { href: '/contato', label: 'Contato' },
+    { href: '/devolucao', label: 'Devolução' },
   ]
 
   const handleSearch = (e: React.FormEvent) => {
