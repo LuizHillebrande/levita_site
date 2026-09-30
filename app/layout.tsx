@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
 import './globals.css'
-import { Analytics } from '@/components/analytics'
+import { Analytics, GtmNoscript } from '@/components/analytics'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
@@ -37,6 +37,7 @@ export default function RootLayout({
         <Analytics />
       </head>
       <body className={`${dmSans.variable} ${dmSerif.variable}`}>
+        <GtmNoscript />
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
