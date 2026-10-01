@@ -20,6 +20,13 @@ export const metadata: Metadata = {
   title: 'Levita Móveis Hospitalares',
   description:
     'Fabricantes de móveis hospitalares, consolidados como a marca mais lembrada pelo paranaense através da qualidade.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
 }
 
 export default function RootLayout({
