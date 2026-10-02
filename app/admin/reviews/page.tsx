@@ -13,6 +13,7 @@ interface ReviewRow {
   rating: number
   comment: string
   authorName: string | null
+  images?: string[]
   status: ReviewStatus
   createdAt: string
   product: { id: string; name: string; slug: string }
@@ -117,6 +118,7 @@ export default function AdminReviewsPage() {
                     <th className="pb-3 pr-4 font-medium">Produto</th>
                     <th className="pb-3 pr-4 font-medium">Nota</th>
                     <th className="pb-3 pr-4 font-medium">Comentário</th>
+                    <th className="pb-3 pr-4 font-medium">Fotos</th>
                     <th className="pb-3 pr-4 font-medium">Autor</th>
                     <th className="pb-3 pr-4 font-medium">Status</th>
                     <th className="pb-3 pr-4 font-medium">Data</th>
@@ -144,6 +146,23 @@ export default function AdminReviewsPage() {
                       </td>
                       <td className="py-3 pr-4 max-w-xs">
                         <p className="text-gray-800 line-clamp-3 whitespace-pre-wrap">{r.comment}</p>
+                      </td>
+                      <td className="py-3 pr-4">
+                        {Array.isArray(r.images) && r.images.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-w-[140px]">
+                            {r.images.map((url) => (
+                              <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                                <img
+                                  src={url}
+                                  alt=""
+                                  className="h-12 w-12 rounded border border-gray-200 object-cover"
+                                />
+                              </a>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="py-3 pr-4 whitespace-nowrap text-gray-600">
                         {r.authorName || '—'}

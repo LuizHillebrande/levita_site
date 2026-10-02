@@ -2,16 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { verifyAuth } from '@/lib/auth-middleware'
 import { v2 as cloudinary } from 'cloudinary'
 
+const PUBLIC_REVIEW_FOLDER = 'reviews'
+const PUBLIC_REVIEW_MAX_BYTES = 8 * 1024 * 1024
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifyAuth(request)
-
-    if (!auth || auth.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Não autorizado' },
-        { status: 401 }
-      )
-    }
+    const isAdmin = Boolean(auth && auth.role === 'admin')
 
     // Validar variáveis de ambiente do Cloudinary
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME
@@ -39,14 +36,31 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get('file') as File
-    const folder = formData.get('folder') as string || 'products'
-    const resourceType = formData.get('resourceType') === 'video' ? 'video' : 'image'
+    const requestedFolder = (formData.get('folder') as string) || 'products'
+    const requestedResourceType = formData.get('resourceType') === 'video' ? 'video' : 'image'
 
     if (!file) {
       return NextResponse.json(
         { error: 'Nenhum arquivo enviado' },
         { status: 400 }
       )
+    }
+
+    let folder = requestedFolder
+    let resourceType = requestedResourceType
+
+    if (!isAdmin) {
+      if (requestedResourceType !== 'image' || requestedFolder !== PUBLIC_REVIEW_FOLDER) {
+        return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+      }
+      folder = PUBLIC_REVIEW_FOLDER
+      resourceType = 'image'
+      if (file.size > PUBLIC_REVIEW_MAX_BYTES) {
+        return NextResponse.json(
+          { error: 'Arquivo muito grande. Tamanho máximo: 8MB' },
+          { status: 400 }
+        )
+      }
     }
 
     // Validar tipo de arquivo

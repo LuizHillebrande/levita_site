@@ -1,18 +1,28 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Star, Loader2 } from 'lucide-react'
+import { Star, Loader2, ImagePlus, X } from 'lucide-react'
+
+const MAX_REVIEW_IMAGES = 5
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+interface ReviewPhoto {
+  file: File
+  preview: string
+}
 
 interface Review {
   id: string
   rating: number
   comment: string
   authorName: string | null
+  images?: string[]
   createdAt: string
 }
 
@@ -28,6 +38,18 @@ export function ProductReviewsSection({ productId, productName }: ProductReviews
   const [authorName, setAuthorName] = useState('')
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [photos, setPhotos] = useState<ReviewPhoto[]>([])
+  const [activeImage, setActiveImage] = useState<string | null>(null)
+  const photosRef = useRef<ReviewPhoto[]>([])
+
+  const setReviewPhotos = (next: ReviewPhoto[]) => {
+    const kept = new Set(next.map((photo) => photo.preview))
+    photosRef.current.forEach((photo) => {
+      if (!kept.has(photo.preview)) URL.revokeObjectURL(photo.preview)
+    })
+    photosRef.current = next
+    setPhotos(next)
+  }
 
   const load = () => {
     fetch(`/api/products/${productId}/reviews`)
@@ -42,14 +64,70 @@ export function ProductReviewsSection({ productId, productName }: ProductReviews
     load()
   }, [productId])
 
+  useEffect(() => {
+    return () => {
+      photosRef.current.forEach((photo) => URL.revokeObjectURL(photo.preview))
+    }
+  }, [])
+
+  const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (selected.length === 0) return
+
+    const accepted: ReviewPhoto[] = []
+    for (const file of selected) {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        alert('Tipo de arquivo não permitido. Use JPG, PNG ou WEBP')
+        continue
+      }
+      if (file.size > MAX_IMAGE_BYTES) {
+        alert('Arquivo muito grande. Tamanho máximo: 8MB')
+        continue
+      }
+      accepted.push({ file, preview: URL.createObjectURL(file) })
+    }
+
+    const room = MAX_REVIEW_IMAGES - photosRef.current.length
+    if (room <= 0 || accepted.length === 0) {
+      accepted.forEach((photo) => URL.revokeObjectURL(photo.preview))
+      if (room <= 0) alert(`Você pode enviar no máximo ${MAX_REVIEW_IMAGES} fotos`)
+      return
+    }
+
+    const next = accepted.slice(0, room)
+    accepted.slice(room).forEach((photo) => URL.revokeObjectURL(photo.preview))
+    if (accepted.length > room) {
+      alert(`Você pode enviar no máximo ${MAX_REVIEW_IMAGES} fotos`)
+    }
+    setReviewPhotos([...photosRef.current, ...next])
+  }
+
+  const uploadReviewPhotos = async (files: ReviewPhoto[]) => {
+    const urls: string[] = []
+    for (const photo of files) {
+      const formData = new FormData()
+      formData.append('file', photo.file)
+      formData.append('folder', 'reviews')
+      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (!res.ok || typeof data.url !== 'string') {
+        throw new Error(typeof data.error === 'string' ? data.error : 'Erro ao enviar foto')
+      }
+      urls.push(data.url)
+    }
+    return urls
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
     try {
+      const images = await uploadReviewPhotos(photosRef.current)
       const res = await fetch(`/api/products/${productId}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, comment, authorName }),
+        body: JSON.stringify({ rating, comment, authorName, images }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -59,14 +137,15 @@ export function ProductReviewsSection({ productId, productName }: ProductReviews
       setComment('')
       setAuthorName('')
       setRating(5)
+      setReviewPhotos([])
       alert(
         typeof data.message === 'string'
           ? data.message
           : 'Avaliação enviada. Ela será publicada após análise da nossa equipe.'
       )
       load()
-    } catch {
-      alert('Erro ao enviar avaliação')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Erro ao enviar avaliação')
     } finally {
       setSubmitting(false)
     }
@@ -134,6 +213,56 @@ export function ProductReviewsSection({ productId, productName }: ProductReviews
                   maxLength={2000}
                 />
               </div>
+              <div>
+                <Label htmlFor="review-photos">Fotos (opcional)</Label>
+                <p className="text-sm text-gray-500 mt-1 mb-2">
+                  Até {MAX_REVIEW_IMAGES} fotos, JPG, PNG ou WEBP, com no máximo 8MB cada.
+                </p>
+                <input
+                  id="review-photos"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  disabled={submitting || photos.length >= MAX_REVIEW_IMAGES}
+                  onChange={handlePhotos}
+                />
+                <label
+                  htmlFor="review-photos"
+                  className={`flex items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-600 ${
+                    submitting || photos.length >= MAX_REVIEW_IMAGES
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'cursor-pointer hover:border-[#67CBDD]'
+                  }`}
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  Adicionar fotos
+                </label>
+                {photos.length > 0 && (
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {photos.map((photo) => (
+                      <li key={photo.preview} className="relative">
+                        <img
+                          src={photo.preview}
+                          alt=""
+                          className="h-20 w-20 rounded-md border border-gray-200 object-cover"
+                        />
+                        <button
+                          type="button"
+                          className="absolute -right-2 -top-2 rounded-full bg-white p-1 shadow border border-gray-200"
+                          aria-label="Remover foto"
+                          disabled={submitting}
+                          onClick={() =>
+                            setReviewPhotos(photosRef.current.filter((item) => item.preview !== photo.preview))
+                          }
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               <Button type="submit" disabled={submitting} className="bg-[#67CBDD] hover:bg-[#4FA8B8]">
                 {submitting ? (
                   <>
@@ -184,12 +313,41 @@ export function ProductReviewsSection({ productId, productName }: ProductReviews
                     {r.authorName || 'Cliente'}
                   </p>
                   <p className="text-gray-700 mt-2 whitespace-pre-wrap text-sm">{r.comment}</p>
+                  {Array.isArray(r.images) && r.images.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {r.images.map((url) => (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => setActiveImage(url)}
+                          className="overflow-hidden rounded-md border border-gray-200"
+                        >
+                          <img src={url} alt="" className="h-20 w-20 object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
           )}
         </div>
       </div>
+
+      {activeImage && (
+        <button
+          type="button"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setActiveImage(null)}
+          aria-label="Fechar foto"
+        >
+          <img
+            src={activeImage}
+            alt=""
+            className="max-h-[85vh] max-w-full rounded-lg object-contain"
+          />
+        </button>
+      )}
     </section>
   )
 }
